@@ -6,6 +6,7 @@ import Image from "next/image";
 
 import { IoHeart, IoHeartOutline } from "react-icons/io5";
 import { FiShoppingBag } from "react-icons/fi";
+import Link from "next/link";
 
 type ProductCardProps = {
   image: string;
@@ -25,16 +26,16 @@ const ProductCard = ({
   const [wishlisted, setWishlisted] = useState(false);
 
   return (
-    <div className="group w-72 overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-xl">
+    <div className="group w-60 md:w-65 overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-xl">
       
-      <div className="relative overflow-hidden rounded-t-xl">
+      <Link href="/product" className="relative overflow-hidden rounded-t-xl">
         
         <Image
           src={image}
           alt={title}
           width={500}
           height={600}
-          className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="h-65 w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
         <div className="absolute inset-0 bg-black/5 opacity-0 transition-all duration-300 group-hover:opacity-100" />
@@ -59,30 +60,30 @@ const ProductCard = ({
             Quick Add
           </button>
         </div>
-      </div>
-      <div className="p-5">
+      </Link>
+      <div className="p-2">
         
-        <h3 className="truncate text-xl font-semibold text-[#5f4339]">
+        <h3 className="truncate text-lg font-semibold text-[#5f4339]">
           {title}
         </h3>
 
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-gray-500">
           22KT Gold Jewellery
         </p>
-        <div className="mt-4 flex items-center gap-3">
+        <div className="mt-1 flex items-center gap-2">
           
-          <p className="text-2xl font-bold text-[#5f4339]">
+          <p className="text-xl font-bold text-[#5f4339]">
             {price}
           </p>
 
           {oldPrice && (
-            <p className="text-lg text-gray-400 line-through">
+            <p className="text-md text-gray-400 line-through">
               {oldPrice}
             </p>
           )}
 
           {discount && (
-            <p className="text-sm font-semibold text-green-600">
+            <p className="text-xs font-semibold text-green-600">
               {discount}
             </p>
           )}

@@ -3,10 +3,10 @@ import ProductCard from "./ProductCard";
 
 const ProductSection = () => {
   return (
-    <div className="w-full px-4 md:px-6 py-10">
+    <div className="w-full px-1 md:px-6 py-10">
       <div>
         <p className="text-3xl font-bold">Latest Collections</p>
-        <div className="mt-6 justify-around flex items-center gap-4 flex-wrap">
+        <div className="mt-6 justify-around flex items-center gap-2 flex-wrap">
           {[1, 2, 3, 4, 5].map((item) => (
             <ProductCard
               key={item}

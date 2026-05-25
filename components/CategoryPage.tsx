@@ -41,6 +41,17 @@ const demoProducts = [
     category: "Rings",
     stock: false,
   },
+  {
+    id: 4,
+    image:
+      "https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=80&w=1200&auto=format&fit=crop",
+    title: "Luxury Wedding Ring",
+    price: "₹19,999",
+    oldPrice: "₹24,999",
+    discount: "15% OFF",
+    category: "Rings",
+    stock: false,
+  },
 ];
 
 const categories = [
@@ -331,7 +342,7 @@ const CategoryPage = () => {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-around gap-6">
+          <div className="flex flex-wrap items-center justify-around gap-2 md:gap-6">
             
             {filteredProducts.map(
               (product) => (

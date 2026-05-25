@@ -139,7 +139,9 @@ const Header = () => {
           </div>
 
           {/* CART */}
+          <Link href="/cart">
           <IoCartOutline className="cursor-pointer text-2xl text-gray-700 transition-all hover:text-amber-500" />
+          </Link>
         </div>
       </div>
 

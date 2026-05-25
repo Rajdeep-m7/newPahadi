@@ -6,7 +6,9 @@ const page = () => {
   return (
     <div>
         <Header />
-        <CategoryPage />
+        <div className="max-w-400 mx-auto">
+          <CategoryPage />
+        </div>
         <Footer />
     </div>
   )
