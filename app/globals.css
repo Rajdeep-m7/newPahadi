@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hero-slider {
+  overflow: visible !important;
+}
+
+.hero-slider .swiper-pagination {
+  bottom: -35px !important;
+}
+
+.hero-slider .swiper-pagination-bullet {
+  width: 10px;
+  height: 10px;
+  background: #d1d5db;
+  opacity: 1;
+}
+
+.hero-slider .swiper-pagination-bullet-active {
+  background: #f59e0b;
+}
