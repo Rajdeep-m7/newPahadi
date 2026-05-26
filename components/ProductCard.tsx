@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
 import Image from "next/image";
 import Link from "next/link";
 
 import { IoHeart, IoHeartOutline } from "react-icons/io5";
 import { FiShoppingBag } from "react-icons/fi";
+import { Product } from "@/lib/services/product";
+import { useWishlistStore } from "@/lib/store/useWishlistStore";
 
 type ProductCardProps = {
   image: string;
@@ -14,6 +14,10 @@ type ProductCardProps = {
   price: string;
   oldPrice?: string;
   discount?: string;
+  href?: string;
+  categoryName?: string;
+  product?: Product;
+  variantId?: string;
 };
 
 const ProductCard = ({
@@ -22,14 +26,47 @@ const ProductCard = ({
   price,
   oldPrice,
   discount,
+  href = "/product",
+  categoryName = "22KT Gold Jewellery",
+  product,
+  variantId,
 }: ProductCardProps) => {
-  const [wishlisted, setWishlisted] = useState(false);
+  const items = useWishlistStore((state) => state._items);
+  const pendingToggles = useWishlistStore((state) => state.pendingToggles);
+  const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
+  const fallbackProduct: Product = {
+    id: variantId || href,
+    title,
+    brand: "Pahadi Collections",
+    categoryName,
+    image,
+    price: Number(price.replace(/[^\d.]/g, "")) || 0,
+    mrp: Number(oldPrice?.replace(/[^\d.]/g, "")) || Number(price.replace(/[^\d.]/g, "")) || 0,
+    discount: Number(discount?.replace(/[^\d.]/g, "")) || 0,
+    rating: 0,
+    reviews: 0,
+    slug: href.split("/").filter(Boolean).pop() || href,
+    variantId,
+  };
+  const wishlistProduct = product || fallbackProduct;
+  const wishlistVariantId = variantId || wishlistProduct.variantId || wishlistProduct.id;
+  const wishlisted = items.some((item) => (item.variantId || item.id) === wishlistVariantId);
+  const isPending = pendingToggles.has(wishlistVariantId);
+
+  const handleWishlist = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    await toggleWishlist(wishlistVariantId, {
+      ...wishlistProduct,
+      variantId: wishlistVariantId,
+    });
+  };
 
   return (
     <div className="group w-full min-w-0 overflow-hidden rounded-xl bg-white border border-gray-200 transition-all duration-300 hover:shadow-xl">
 
       {/* IMAGE SECTION */}
-      <Link href="/product" className="relative block overflow-hidden rounded-t-xl">
+      <Link href={href} className="relative block overflow-hidden rounded-t-xl">
 
         <Image
           src={image}
@@ -42,8 +79,10 @@ const ProductCard = ({
         <div className="absolute inset-0 bg-black/5 opacity-0 transition-all duration-300 group-hover:opacity-100" />
 
         <button
-          onClick={() => setWishlisted(!wishlisted)}
+          onClick={handleWishlist}
+          disabled={isPending}
           className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 backdrop-blur-md shadow-md"
+          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
           {wishlisted ? (
             <IoHeart className="text-2xl text-red-500" />
@@ -70,7 +109,7 @@ const ProductCard = ({
         </h3>
 
         <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-          22KT Gold Jewellery
+          {categoryName}
         </p>
 
         <div className="mt-1 flex flex-wrap items-center gap-1 sm:gap-2">

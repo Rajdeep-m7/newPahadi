@@ -1,37 +1,66 @@
-import React from "react";
 import ProductCard from "./ProductCard";
+import { getHomeData, getProducts, Product } from "@/lib/services/product";
 
-const ProductSection = () => {
+type HomeSection = {
+  title?: string;
+  name?: string;
+  products: Product[];
+};
+
+const formatPrice = (price: number) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(price);
+
+const renderProductCard = (product: Product) => (
+  <ProductCard
+    key={product.id}
+    image={product.image}
+    title={product.title}
+    price={formatPrice(product.price)}
+    oldPrice={product.mrp > product.price ? formatPrice(product.mrp) : undefined}
+    discount={product.discount ? `${product.discount}% OFF` : undefined}
+    href={`/product/${product.slug}`}
+    categoryName={product.categoryName}
+    product={product}
+    variantId={product.variantId || product.id}
+  />
+);
+
+const ProductSection = async () => {
+  const [homeSections, fallbackProducts] = await Promise.all([
+    getHomeData(),
+    getProducts({ limit: 10 }),
+  ]);
+
+  const latestProducts =
+    (homeSections as HomeSection[]).find((section) =>
+      String(section.title || section.name || "")
+        .toLowerCase()
+        .includes("latest")
+    )?.products || fallbackProducts.slice(0, 5);
+
+  const allProducts =
+    (homeSections as HomeSection[]).find((section) =>
+      String(section.title || section.name || "")
+        .toLowerCase()
+        .includes("all")
+    )?.products || fallbackProducts;
+
   return (
     <div className="w-full py-10">
       <div>
         <p className="text-3xl font-bold">Latest Collections</p>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4 xl:grid-cols-5">
-          {[1, 2, 3, 4, 5].map((item) => (
-            <ProductCard
-              key={item}
-              image="https://images.unsplash.com/photo-1617038220319-276d3cfab638?q=80&w=1200&auto=format&fit=crop"
-              title="14KT Yellow Gold Necklace"
-              price="₹12,599"
-              oldPrice="₹16,599"
-              discount="20% OFF"
-            />
-          ))}
+          {latestProducts.map(renderProductCard)}
         </div>
       </div>
       <div className="my-3 mt-5">
         <p className="text-3xl font-bold">All Collections</p>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4 xl:grid-cols-5">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((item) => (
-            <ProductCard
-              key={item}
-              image="https://images.unsplash.com/photo-1617038220319-276d3cfab638?q=80&w=1200&auto=format&fit=crop"
-              title="14KT Yellow Gold Necklace"
-              price="₹12,599"
-              oldPrice="₹16,599"
-              discount="20% OFF"
-            />
-          ))}
+          {allProducts.map(renderProductCard)}
         </div>
       </div>
     </div>
