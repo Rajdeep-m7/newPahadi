@@ -10,13 +10,13 @@ function page() {
   return (
     <div>
       <Header />
-      <div className="max-w-400 mx-auto">
+      <main className="main-shell">
         <HeroSlider />
         <Section1 />
         <ProductSection />
         <VideoSlider />
         <StaticBanner />
-      </div>
+      </main>
       <Footer />
     </div>
   );

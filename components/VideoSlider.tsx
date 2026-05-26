@@ -19,7 +19,7 @@ const videos = [
 
 const VideoSlider = () => {
   return (
-    <section className="w-full px-4 md:px-4 py-12">
+    <section className="w-full py-12">
       <div className="mb-8">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
           Trending Videos

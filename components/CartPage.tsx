@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { FiMinus, FiPlus, FiTrash2, FiArrowRight } from "react-icons/fi";
 
 const CartPage = () => {
@@ -29,10 +30,9 @@ const CartPage = () => {
   );
 
   return (
-  <section className="min-h-screen bg-[#fafafa] px-3 py-4 sm:px-5 lg:px-12">
+  <section className="min-h-screen bg-[#fafafa] py-4">
     
-    {/* HEADER */}
-    <div className="mx-auto mb-5 max-w-7xl">
+    <div className="mb-5">
       <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl">
         Shopping Cart
       </h1>
@@ -42,10 +42,8 @@ const CartPage = () => {
       </p>
     </div>
 
-    {/* MAIN GRID */}
-    <div className="mx-auto grid max-w-7xl grid-cols-1 gap-5 lg:grid-cols-[1fr_380px] lg:gap-8">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_380px] lg:gap-8">
       
-      {/* CART ITEMS */}
       <div className="space-y-3 sm:space-y-4">
         
         {cartItems.map((item) => (
@@ -56,7 +54,6 @@ const CartPage = () => {
             
             <div className="flex gap-3 sm:gap-4">
               
-              {/* IMAGE */}
               <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-gray-100 sm:h-28 sm:w-28">
                 <Image
                   src={item.image}
@@ -66,10 +63,8 @@ const CartPage = () => {
                 />
               </div>
 
-              {/* CONTENT */}
               <div className="flex min-w-0 flex-1 flex-col justify-between">
                 
-                {/* TOP */}
                 <div className="flex items-start justify-between gap-2">
                   
                   <div className="min-w-0">
@@ -82,23 +77,19 @@ const CartPage = () => {
                     </p>
                   </div>
 
-                  {/* DELETE */}
                   <button className="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-500">
                     <FiTrash2 size={18} />
                   </button>
                 </div>
 
-                {/* BOTTOM */}
                 <div className="mt-3 flex items-end justify-between">
                   
-                  {/* PRICE */}
                   <div>
                     <h4 className="text-lg font-bold text-gray-900 sm:text-2xl">
                       ₹{item.price.toLocaleString()}
                     </h4>
                   </div>
 
-                  {/* QUANTITY */}
                   <div className="flex items-center rounded-full border border-gray-200 bg-gray-50 px-1">
                     
                     <button className="flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-white">
@@ -120,7 +111,6 @@ const CartPage = () => {
         ))}
       </div>
 
-      {/* SUMMARY */}
       <div className="lg:sticky lg:top-6 lg:h-fit">
         
         <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] sm:p-6">
@@ -129,7 +119,6 @@ const CartPage = () => {
             Order Summary
           </h2>
 
-          {/* SUMMARY ITEMS */}
           <div className="mt-5 space-y-4">
             
             <div className="flex items-center justify-between text-sm text-gray-600 sm:text-base">
@@ -152,7 +141,6 @@ const CartPage = () => {
               <span>₹2,000</span>
             </div>
 
-            {/* TOTAL */}
             <div className="border-t border-dashed pt-4">
               
               <div className="flex items-center justify-between">
@@ -168,13 +156,11 @@ const CartPage = () => {
             </div>
           </div>
 
-          {/* CHECKOUT BUTTON */}
-          <button className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-medium text-white transition hover:bg-gray-800 sm:h-14 sm:text-base">
+          <Link href="/checkout" className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-medium text-white transition hover:bg-gray-800 sm:h-14 sm:text-base">
             Proceed to Checkout
             <FiArrowRight size={18} />
-          </button>
+          </Link>
 
-          {/* NOTE */}
           <div className="mt-4 rounded-2xl bg-gray-50 p-4">
             <p className="text-xs leading-6 text-gray-500 sm:text-sm">
               Secure checkout with encrypted payment protection and

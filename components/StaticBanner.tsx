@@ -26,7 +26,7 @@ const StaticBanner = () => {
   ];
 
   return (
-    <section className="w-full px-4 py-6 md:px-8 lg:px-12">
+    <section className="w-full py-6">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         
         {/* LEFT BIG CARD */}

@@ -96,7 +96,7 @@ const CategoryPage = () => {
   );
 
   return (
-    <section className="w-full px-4 md:px-6 py-10">
+    <section className="w-full py-10">
       
       {/* TOP */}
       <div className="mb-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -342,7 +342,7 @@ const CategoryPage = () => {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-around gap-2 md:gap-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 xl:grid-cols-4 2xl:grid-cols-5">
             
             {filteredProducts.map(
               (product) => (

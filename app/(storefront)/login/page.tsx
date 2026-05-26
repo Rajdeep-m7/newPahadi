@@ -7,7 +7,9 @@ const page = () => {
   return (
     <div>
         <Header />
-        <Registration />
+        <main className='main-shell'>
+            <Registration />
+        </main>
         <Footer />
     </div>
   )

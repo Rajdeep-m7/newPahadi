@@ -5,13 +5,15 @@ import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectFade, Pagination } from "swiper/modules";
 
-import slider1 from "../public/slider-for-pc.avif"
-import slider2 from "../public/slider-for-pc-1.avif"
-import slider3 from "../public/slider-for-pc-2.avif"
-import slider4 from "../public/slider-for-pc-3.avif"
-import slider5 from "../public/slider-for-pc-4.avif"
+import slider1 from "../public/slider-for-pc.avif";
+import slider2 from "../public/slider-for-pc-1.avif";
+import slider3 from "../public/slider-for-pc-2.avif";
+import slider4 from "../public/slider-for-pc-3.avif";
+import slider5 from "../public/slider-for-pc-4.avif";
 
-
+import mobile1 from "../public/mobile slide1.avif";
+import mobile2 from "../public/mobile slide2.avif";
+import mobile3 from "../public/mobile slide3.avif";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -20,41 +22,39 @@ import "swiper/css/effect-fade";
 const slides = [
   {
     id: 1,
-    image:
-      slider1,
+    desktop: slider1,
+    mobile: mobile1,
   },
   {
     id: 2,
-    image:
-      slider2,
+    desktop: slider2,
+    mobile: mobile2,
   },
   {
     id: 3,
-    image:
-      slider3,
+    desktop: slider3,
+    mobile: mobile3,
   },
   {
     id: 4,
-    image:
-      slider4,
-   
+    desktop: slider4,
+    mobile: mobile1,
   },
   {
     id: 5,
-    image:
-      slider5,
-  }
+    desktop: slider5,
+    mobile: mobile2,
+  },
 ];
 
 const HeroSlider = () => {
   return (
-    <div className="w-full px-2 md:px-6 py-4">
-      
+    <div className="w-full py-4">
       <Swiper
         effect="fade"
         modules={[Autoplay, Pagination, EffectFade]}
         slidesPerView={1}
-        loop
+        loop={true}
         speed={1400}
         autoplay={{
           delay: 3500,
@@ -66,25 +66,31 @@ const HeroSlider = () => {
         className="hero-slider"
       >
         {slides.map((slide) => (
-          <SwiperSlide
-            key={slide.id}
-            className="px-1 md:px-2"
-          >
-            <div className="relative h-87.5 md:h-120 w-full overflow-hidden rounded-3xl">
+          <SwiperSlide key={slide.id}>
+            <div className="relative h-87.5 md:h-130 w-full overflow-hidden rounded-3xl">
               
-              {/* IMAGE */}
+              {/* Desktop Image */}
               <Image
-                src={slide.image}
-                alt="slider"
+                src={slide.desktop}
+                alt={`slide-${slide.id}`}
                 fill
                 priority
-                className="object-cover"
+                className="hidden md:block object-cover"
               />
 
-              {/* OVERLAY */}
+              {/* Mobile Image */}
+              <Image
+                src={slide.mobile}
+                alt={`slide-${slide.id}`}
+                fill
+                priority
+                className="block md:hidden object-cover"
+              />
+
+              {/* Overlay */}
               <div className="absolute inset-0 bg-black/30" />
 
-              {/* CONTENT */}
+              {/* Content */}
               <div
                 className="
                   absolute inset-0
@@ -94,6 +100,7 @@ const HeroSlider = () => {
                   p-6 md:p-16
                 "
               >
+                {/* Add your text/buttons here */}
               </div>
             </div>
           </SwiperSlide>

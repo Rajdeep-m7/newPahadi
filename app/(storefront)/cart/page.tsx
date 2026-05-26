@@ -7,9 +7,9 @@ const page = () => {
   return (
     <div>
         <Header />
-        <div className='mx-auto max-w-400'>
+        <main className='main-shell'>
             <CartPage />
-        </div>
+        </main>
         <Footer />
     </div>
   )

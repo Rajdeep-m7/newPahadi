@@ -15,7 +15,7 @@ const Registration = () => {
   const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <section className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
+    <section className="flex min-h-screen items-center justify-center bg-gray-50 py-10">
       
       <div className="w-full max-w-md rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
         
