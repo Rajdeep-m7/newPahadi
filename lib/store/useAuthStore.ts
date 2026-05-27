@@ -29,7 +29,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => set({ user: null, token: null, isAuthenticated: false }),
     }),
     {
-      name: 'mscliq-auth-storage',
+      name: 'pahadi-auth-storage',
       partialize: (state) => ({
         user: state.user,
         token: state.token,

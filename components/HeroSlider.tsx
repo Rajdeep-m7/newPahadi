@@ -49,7 +49,7 @@ const slides = [
 
 const HeroSlider = () => {
   return (
-    <div className="w-full py-4">
+    <div className="w-full pb-1">
       <Swiper
         effect="fade"
         modules={[Autoplay, Pagination, EffectFade]}

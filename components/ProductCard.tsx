@@ -7,6 +7,7 @@ import { IoHeart, IoHeartOutline } from "react-icons/io5";
 import { FiShoppingBag } from "react-icons/fi";
 import { Product } from "@/lib/services/product";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
+import { useCartStore } from "@/lib/store/useCartStore";
 
 type ProductCardProps = {
   image: string;
@@ -34,6 +35,9 @@ const ProductCard = ({
   const items = useWishlistStore((state) => state._items);
   const pendingToggles = useWishlistStore((state) => state.pendingToggles);
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
+
+  const addItem = useCartStore((state) => state.addItem);
+
   const fallbackProduct: Product = {
     id: variantId || href,
     title,
@@ -62,8 +66,25 @@ const ProductCard = ({
     });
   };
 
+  const handleAddToCart = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!wishlistVariantId) return;
+
+    addItem({
+      variantId: wishlistVariantId,
+      quantity: 1,
+      title: wishlistProduct.title,
+      image: wishlistProduct.image,
+      price: wishlistProduct.price,
+      mrp: wishlistProduct.mrp,
+      stock: 10, // Default stock if not available
+      effectiveTax: wishlistProduct.effectiveTax,
+    });
+  };
+
   return (
-    <div className="group w-full min-w-0 overflow-hidden rounded-xl bg-white border border-gray-200 transition-all duration-300 hover:shadow-xl">
+    <div className="group min-w-0 md:min-w-60 w-full overflow-hidden rounded-xl bg-white border border-gray-200 transition-all duration-300 hover:shadow-xl">
 
       {/* IMAGE SECTION */}
       <Link href={href} className="relative block overflow-hidden rounded-t-xl">
@@ -73,7 +94,7 @@ const ProductCard = ({
           alt={title} 
           width={500}
           height={600}
-          className="h-50 w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:h-65 md:h-70"
+          className="h-45 w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:h-65 md:h-70"
         />
 
         <div className="absolute inset-0 bg-black/5 opacity-0 transition-all duration-300 group-hover:opacity-100" />
@@ -81,7 +102,7 @@ const ProductCard = ({
         <button
           onClick={handleWishlist}
           disabled={isPending}
-          className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 backdrop-blur-md shadow-md"
+          className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/20 backdrop-blur-md shadow-md"
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
           {wishlisted ? (
@@ -93,7 +114,10 @@ const ProductCard = ({
 
         <div className="absolute bottom-4 left-1/2 hidden w-[88%] -translate-x-1/2 translate-y-20 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 md:block">
 
-          <button className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#b98b5f] py-2 text-lg font-semibold text-white transition-all duration-300 hover:bg-[#a67a52]">
+          <button 
+            onClick={handleAddToCart}
+            className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#b98b5f] py-2 text-lg font-semibold text-white transition-all duration-300 hover:bg-[#a67a52]"
+          >
 
             <FiShoppingBag className="text-xl" />
 
@@ -132,7 +156,10 @@ const ProductCard = ({
         </div>
 
         {/* Mobile Quick Add Button */}
-        <button className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-[#b98b5f] py-2 text-sm font-semibold text-white md:hidden">
+        <button 
+          onClick={handleAddToCart}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-[#b98b5f] py-2 text-sm font-semibold text-white md:hidden"
+        >
 
           <FiShoppingBag className="text-lg" />
 

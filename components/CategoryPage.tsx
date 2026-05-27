@@ -162,6 +162,18 @@ const CategoryPage = ({
           <div className="mt-8 border-t pt-6">
             <h3 className="font-medium text-gray-800">Category</h3>
             <div className="mt-4 flex flex-col gap-2">
+              <Link
+                href="/category/all-jewellery"
+                onClick={() => setMobileFilterOpen(false)}
+                className={`flex items-center justify-between rounded-xl px-4 py-3 text-left transition-all ${
+                  categorySlug === "all-jewellery"
+                    ? "bg-[#b98b5f] text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                <span>All Jewellery</span>
+              </Link>
+
               {categories.length > 0 ? (
                 categories.map((category) => {
                   const isActive = category.slug === categorySlug;
@@ -190,11 +202,7 @@ const CategoryPage = ({
                     </Link>
                   );
                 })
-              ) : (
-                <p className="rounded-xl bg-gray-100 px-4 py-3 text-gray-700">
-                  {categoryName}
-                </p>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
@@ -211,7 +219,7 @@ const CategoryPage = ({
           </div>
 
           {sortedProducts.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 xl:grid-cols-4 2xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 xl:grid-cols-4">
               {sortedProducts.map((product) => (
                 <ProductCard
                   key={product.id}

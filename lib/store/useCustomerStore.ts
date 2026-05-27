@@ -101,7 +101,7 @@ export const useCustomerStore = create<CustomerState>()(
       },
     }),
     {
-      name: 'mscliq-customer-storage',
+      name: 'pahadi-customer-storage',
       partialize: (state) => ({ 
         customer: state.customer, 
         token: state.token, 

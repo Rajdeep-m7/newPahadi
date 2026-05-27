@@ -10,8 +10,10 @@ function page() {
   return (
     <div>
       <Header />
-      <main className="main-shell">
+      <div className="main-shell !pt-3 !pb-1">
         <HeroSlider />
+      </div>
+      <main className="main-shell">
         <Section1 />
         <ProductSection />
         <VideoSlider />

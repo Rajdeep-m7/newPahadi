@@ -134,18 +134,25 @@ export const useCartStore = create<CartState>()(
         try {
           const response = await cartApi.get();
           const rawItems = response.data.data?.items || [];
+          const currentLocalItems = get().items;
+
           const backendItems: CartItem[] = rawItems.map((item: any) => {
             const vid = item.variantId;
             const vidObj = (vid && typeof vid === 'object' ? vid : {}) as any;
+            const vidStr = extractVariantId(vid);
+            
+            // Find if we already have this item locally to preserve its tax/rich data
+            const existingLocal = currentLocalItems.find(i => extractVariantId(i.variantId) === vidStr);
+
             return {
-              variantId: extractVariantId(vid),
+              variantId: vidStr,
               quantity: item.quantity ?? 1,
-              title: vidObj.title || item.title,
-              image: vidObj.coverImage?.url || vidObj.image || item.image,
-              price: vidObj.price || item.price,
-              mrp: vidObj.mrp || item.mrp || vidObj.price || item.price,
-              stock: vidObj.stocks || vidObj.stock || item.stock,
-              effectiveTax: vidObj.effectiveTax || item.effectiveTax || null,
+              title: vidObj.title || item.title || existingLocal?.title,
+              image: vidObj.coverImage?.url || vidObj.image || item.image || existingLocal?.image,
+              price: vidObj.price || item.price || existingLocal?.price,
+              mrp: vidObj.mrp || item.mrp || vidObj.price || item.price || existingLocal?.mrp,
+              stock: vidObj.stocks || vidObj.stock || item.stock || existingLocal?.stock,
+              effectiveTax: vidObj.effectiveTax || item.effectiveTax || existingLocal?.effectiveTax || null,
             };
           });
           set({ items: backendItems, isLoading: false, isDirty: false });
@@ -178,6 +185,7 @@ export const useCartStore = create<CartState>()(
               image: item.image || existing.image,
               price: item.price || existing.price,
               stock: item.stock || existing.stock,
+              effectiveTax: item.effectiveTax || existing.effectiveTax,
             });
           } else {
             mergedMap.set(vidStr, item);
@@ -215,7 +223,7 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: 'mscliq-cart-storage',
+      name: 'pahadi-cart-storage',
       partialize: (state) => ({
         items: state.items,
         lastSyncedAt: state.lastSyncedAt,

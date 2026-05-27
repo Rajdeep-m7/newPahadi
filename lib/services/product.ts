@@ -20,6 +20,7 @@ export interface Product {
   createdAt?: string;
   updatedAt?: string;
   variantId?: string;
+  effectiveTax?: TaxDetail[];
 }
 
 export interface GetProductsParams {
@@ -115,6 +116,7 @@ export function mapProduct(prod: any): Product {
     slug: prod.default_slug || prod.slug,
     variantId: prod.defaultVariantId || prod.variantId,
     categoryId: typeof prod.categoryId === 'object' ? prod.categoryId?._id : prod.categoryId,
+    effectiveTax: prod.effectiveTax || prod.defaultVariant?.effectiveTax || null,
   };
 }
 

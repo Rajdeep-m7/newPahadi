@@ -13,7 +13,8 @@ const formatPrice = (price: number) =>
   }).format(price);
 
 const WishlistPage = () => {
-  const items = useWishlistStore((state) => state._items);
+  // Safe fallback
+  const items = useWishlistStore((state) => state._items || []);
   const isLoading = useWishlistStore((state) => state.isLoading);
   const error = useWishlistStore((state) => state.error);
   const fetchWishlist = useWishlistStore((state) => state.fetchWishlist);
@@ -28,6 +29,7 @@ const WishlistPage = () => {
         <h1 className="text-3xl font-bold text-gray-900 md:text-4xl">
           Wishlist
         </h1>
+
         <p className="mt-2 text-gray-500">
           Products you saved for later
         </p>
@@ -41,22 +43,36 @@ const WishlistPage = () => {
         <div className="rounded-3xl border border-red-100 bg-red-50 p-8 text-center text-red-600">
           {error}
         </div>
-      ) : items.length > 0 ? (
+      ) : Array.isArray(items) && items.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 xl:grid-cols-4 2xl:grid-cols-5">
-          {items.map((product) => (
+          {items.map((product: any) => (
             <ProductCard
-              key={product.variantId || product.id}
-              image={product.image}
-              title={product.title}
-              price={formatPrice(product.price)}
-              oldPrice={
-                product.mrp > product.price ? formatPrice(product.mrp) : undefined
+              key={product.variantId || product._id || product.id}
+              image={
+                product.image ||
+                product.coverImage ||
+                "/placeholder.png"
               }
-              discount={product.discount ? `${product.discount}% OFF` : undefined}
+              title={product.title}
+              price={formatPrice(product.price || 0)}
+              oldPrice={
+                product.mrp > product.price
+                  ? formatPrice(product.mrp)
+                  : undefined
+              }
+              discount={
+                product.discount
+                  ? `${product.discount}% OFF`
+                  : undefined
+              }
               href={`/product/${product.slug}`}
               categoryName={product.categoryName}
               product={product}
-              variantId={product.variantId || product.id}
+              variantId={
+                product.variantId ||
+                product._id ||
+                product.id
+              }
             />
           ))}
         </div>
@@ -65,9 +81,11 @@ const WishlistPage = () => {
           <h2 className="text-xl font-semibold text-gray-900">
             Your wishlist is empty
           </h2>
+
           <p className="mt-2 text-gray-500">
             Add products to your wishlist and they will appear here.
           </p>
+
           <Link
             href="/"
             className="mt-6 inline-flex rounded-full bg-black px-6 py-3 text-sm font-medium text-white transition hover:bg-gray-800"

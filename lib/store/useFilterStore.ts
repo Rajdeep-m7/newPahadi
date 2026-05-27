@@ -73,7 +73,7 @@ export const useFilterStore = create<FilterState>()(
         }),
     }),
     {
-      name: 'mscliq-filters',
+      name: 'pahadi-filters',
       partialize: (state) => ({
         // Don't persist - we want clean state on new category visits
         selectedBrands: state.selectedBrands,

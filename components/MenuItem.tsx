@@ -6,11 +6,16 @@ type MenuItemProps = {
   title: string;
   image: string | StaticImageData;
   href?: string;
+  onClick?: () => void;
 };
 
-export default function MenuItem({ title, image, href }: MenuItemProps) {
+export default function MenuItem({ title, image, href, onClick }: MenuItemProps) {
   return (
-    <Link href={href || `/category/${title.toLowerCase().replace(/\s+/g, '-')}`} className="group relative flex items-center gap-2 px-3 py-1 pb-4 cursor-pointer">
+    <Link 
+      href={href || `/category/${title.toLowerCase().replace(/\s+/g, '-')}`} 
+      onClick={onClick}
+      className="group relative flex items-center gap-2 px-3 py-1 pb-2 cursor-pointer"
+    >
       <Image
         height={20}
         width={20}
