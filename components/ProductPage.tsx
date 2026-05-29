@@ -95,6 +95,9 @@ const ProductPage = ({ product, variant, similarProducts = [] }: ProductPageProp
       ? Math.round(((mrp - price) / mrp) * 100)
       : product?.discount || 0;
 
+  const productRating = productDetails?.rating || product?.rating || 0;
+  const productReviews = productDetails?.numReviews || product?.reviews || 0;
+
   const wishlistVariantId =
     currentVariant?._id || product?.variantId || product?.id || "";
 
@@ -108,8 +111,8 @@ const ProductPage = ({ product, variant, similarProducts = [] }: ProductPageProp
       price,
       mrp,
       discount,
-      rating: 0,
-      reviews: 0,
+      rating: productRating,
+      reviews: productReviews,
       slug: currentVariant?.slug || wishlistVariantId,
     }),
     id: product?.id || wishlistVariantId,
@@ -121,6 +124,8 @@ const ProductPage = ({ product, variant, similarProducts = [] }: ProductPageProp
     discount,
     variantId: wishlistVariantId,
     slug: currentVariant?.slug || product?.slug || wishlistVariantId,
+    rating: productRating,
+    reviews: productReviews,
   };
 
   const wishlistItems = useWishlistStore((state) => state._items);
@@ -393,13 +398,13 @@ const ProductPage = ({ product, variant, similarProducts = [] }: ProductPageProp
                     {[...Array(5)].map((_, i) => (
                       <FiStar
                         key={i}
-                        className={i < Math.round(product?.rating || 0) ? "fill-current" : "text-gray-200"}
+                        className={i < Math.round(productRating) ? "fill-current" : "text-gray-200"}
                         size={16}
                       />
                     ))}
                   </div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    {product?.rating || 0} Ratings & {product?.reviews || 0}{" "}
+                    {productRating} Ratings & {productReviews}{" "}
                     Reviews
                   </p>
                 </div>
@@ -421,6 +426,54 @@ const ProductPage = ({ product, variant, similarProducts = [] }: ProductPageProp
                     </span>
                   )}
                 </div>
+
+                {/* VARIANTS SECTION */}
+                {variant?.siblingOptions && variant.siblingOptions.length > 1 && (
+                  <div className="mt-8">
+                    <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">
+                      Available Options
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                      {variant.siblingOptions.map((opt) => {
+                        const isActive = opt.slug === currentVariant?.slug;
+                        const attrText = Object.values(opt.attributes || {}).join(" / ");
+                        
+                        return (
+                          <Link
+                            key={opt._id}
+                            href={`/product/${opt.slug}`}
+                            className={`group relative flex flex-col items-center gap-2 p-2 rounded-2xl border transition-all ${
+                              isActive
+                                ? "border-amber-500 bg-amber-50/30 ring-2 ring-amber-500/10 shadow-md"
+                                : "border-gray-100 bg-white hover:border-amber-200 hover:shadow-sm"
+                            }`}
+                          >
+                            <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-gray-50 border border-gray-100">
+                              <Image
+                                src={opt.coverImage?.url || fallbackImage}
+                                alt={opt.title}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                            {attrText && (
+                              <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                                isActive ? "bg-amber-500 text-white" : "bg-gray-50 text-gray-400 group-hover:bg-amber-50 group-hover:text-amber-600"
+                              }`}>
+                                {attrText}
+                              </span>
+                            )}
+                            {isActive && (
+                              <div className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-amber-500 flex items-center justify-center border-2 border-white">
+                                <FiCheckCircle className="text-white" size={10} />
+                              </div>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* PINCODE CHECKER */}
                 <div className="mt-6 p-4 max-w-fit rounded-2xl bg-gray-50 border border-gray-100">

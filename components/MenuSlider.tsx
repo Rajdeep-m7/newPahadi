@@ -11,6 +11,7 @@ export type MenuSliderCategory = {
   name: string;
   slug: string;
   imageUrl?: string;
+  iconUrl?: string;
 };
 
 type MenuSliderProps = {

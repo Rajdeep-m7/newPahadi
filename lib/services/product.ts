@@ -79,6 +79,9 @@ export interface VariantDetail {
     categoryId: { _id: string; name: string };
     returnPolicyType: string;
     returnWindowDays: number;
+    rating?: number;
+    numReviews?: number;
+    isPublished?: boolean;
   };
   isActive: boolean;
   isDefault: boolean;
@@ -172,7 +175,7 @@ export const getVariantBySlug = cache(async function getVariantBySlug(slug: stri
     const data = response.data.data;
 
     // Filter out inactive variants or unpublished products
-    if (!data || !data.currentVariant?.isActive || data.currentVariant?.productId?.isPublished === false) {
+    if (!data || data.currentVariant?.isActive === false || data.currentVariant?.productId?.isPublished === false) {
       return null;
     }
 
@@ -192,6 +195,17 @@ export async function getSimilarProducts(productId: string): Promise<Product[]> 
       .map((prod: any) => mapProduct(prod));
   } catch (error) {
     console.error(`Error fetching similar products for ${productId}:`, error);
+    return [];
+  }
+}
+
+export async function getVariantsByProduct(productId: string): Promise<VariantDetail[]> {
+  try {
+    const response = await shopApi.get(`/variants/product/${productId}`);
+    const data = response.data.data || [];
+    return data.filter((v: any) => v.isActive !== false);
+  } catch (error) {
+    console.error(`Error fetching variants for product ${productId}:`, error);
     return [];
   }
 }
@@ -337,17 +351,24 @@ export async function getCategoryFilters(
 export async function getHomeData() {
   try {
     const response = await shopApi.get("/home");
-    const activeSections = response.data.data?.activeSections || [];
+    const data = response.data.data || {};
+    const activeSections = data.activeSections || [];
+    const latestProducts = (data.latestProducts || [])
+      .filter((prod: any) => prod.isPublished !== false && prod.isActive !== false)
+      .map((prod: any) => mapProduct(prod));
 
-    
-    return activeSections.map((section: any) => ({
-      ...section,
-      products: (section.products || [])
-        .filter((prod: any) => prod.isPublished !== false && prod.isActive !== false)
-        .map((prod: any) => mapProduct(prod))
-    }));
+
+    return {
+      latestProducts,
+      activeSections: activeSections.map((section: any) => ({
+        ...section,
+        products: (section.products || [])
+          .filter((prod: any) => prod.isPublished !== false && prod.isActive !== false)
+          .map((prod: any) => mapProduct(prod))
+      }))
+    };
   } catch (error) {
     console.error("Error fetching home data:", error);
-    return [];
+    return { latestProducts: [], activeSections: [] };
   }
 }

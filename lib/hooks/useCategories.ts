@@ -10,6 +10,8 @@ export interface Category {
   slug: string;
   imageUrl: string;
   imagePublicId: string;
+  iconUrl?: string;
+  iconPublicId?: string;
   parentCategoryId: string | null;
   taxes?: { name: string; slab: number }[];
   effectiveTax?: { name: string; slab: number }[];

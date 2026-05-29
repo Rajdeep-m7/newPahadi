@@ -10,6 +10,7 @@ const Header = async () => {
         name: category.name,
         slug: category.slug,
         imageUrl: category.imageUrl,
+        iconUrl: category.iconUrl,
       }))}
     />
   );

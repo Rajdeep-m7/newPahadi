@@ -37,33 +37,32 @@ const renderProductCard = (product: Product) => (
 );
 
 const ProductSection = async () => {
-  const [homeSections, fallbackProducts] = await Promise.all([
-    getHomeData(),
-    getProducts({ limit: 10 }),
-  ]);
-
-  const latestProducts =
-    (homeSections as HomeSection[]).find((section) =>
-      String(section.title || section.name || "")
-        .toLowerCase()
-        .includes("latest"),
-    )?.products || fallbackProducts.slice(0, 5);
-
-  const allProducts =
-    (homeSections as HomeSection[]).find((section) =>
-      String(section.title || section.name || "")
-        .toLowerCase()
-        .includes("all"),
-    )?.products || fallbackProducts;
+  const { latestProducts, activeSections } = await getHomeData();
 
   return (
-    <div className="w-full py-10">
-      <div>
-        <p className="text-3xl font-bold">Latest Collections</p>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4 xl:grid-cols-5">
-          {latestProducts.map(renderProductCard)}
+    <div className="w-full py-10 space-y-16">
+      {/* Latest Collections Section */}
+      {latestProducts.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-end">
+            <div>
+              <p className="text-3xl font-bold">Latest Collections</p>
+              <div className="h-1 w-20 bg-brand mt-2 rounded-full" />
+            </div>
+            <Link 
+              href="/category/all-jewellery"
+              className="text-brand font-bold text-sm hover:underline"
+            >
+              View All
+            </Link>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4 xl:grid-cols-5">
+            {latestProducts.slice(0, 5).map(renderProductCard)}
+          </div>
         </div>
-      </div>
+      )}
+
       <Link href="/category/all-jewellery">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 my-5">
           <Image
@@ -92,12 +91,36 @@ const ProductSection = async () => {
         </div>
       </Link>
 
-      <div className="my-3 mt-5">
-        <p className="text-3xl font-bold">All Collections</p>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4 xl:grid-cols-5">
-          {allProducts.slice(0,10).map(renderProductCard)}
-        </div>
-      </div>
+      {/* Category Specific Sections */}
+      {activeSections.length > 0 ? (
+        activeSections.map((section: any) => (
+          <div key={section.id} className="space-y-6">
+            <div className="flex justify-between items-end">
+              <div>
+                <p className="text-3xl font-bold">{section.name}</p>
+                <div className="h-1 w-20 bg-brand mt-2 rounded-full" />
+              </div>
+              <Link 
+                href={`/category/${section.slug}`}
+                className="text-brand font-bold text-sm hover:underline"
+              >
+                View All
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4 xl:grid-cols-5">
+              {section.products.map(renderProductCard)}
+            </div>
+          </div>
+        ))
+      ) : (
+        !latestProducts.length && (
+          <div className="text-center py-20 text-muted">
+            No featured collections available.
+          </div>
+        )
+      )}
+
     </div>
   );
 };

@@ -53,11 +53,11 @@ export default function AdminNotFound() {
         </button>
 
         <Link
-          href="/admin/dashboard"
+          href="/admin/orders"
           className="flex items-center gap-2 px-6 py-3 bg-brand text-white rounded-xl text-sm font-bold hover:bg-brand-dark transition-all shadow-lg shadow-brand/20 active:scale-95 w-full sm:w-auto justify-center"
         >
           <LayoutDashboard size={18} />
-          Return to Dashboard
+          Return to Orders
         </Link>
       </div>
 

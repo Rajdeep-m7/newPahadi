@@ -4,7 +4,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { wishlistApi } from '@/lib/api/wishlist';
 import { Product } from '@/lib/services/product';
-import axios from 'axios';
 
 interface WishlistStoreItem extends Product {
   addedAt: number;

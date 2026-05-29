@@ -78,9 +78,12 @@ export default function CategoriesPage() {
   
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const iconInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch eligible parents specifically
   const { data: eligibleParents, isLoading: isLoadingParents } = useEligibleParents(
@@ -172,6 +175,8 @@ export default function CategoriesPage() {
 
     setImagePreview(category.imageUrl || null);
     setImageFile(null);
+    setIconPreview(category.iconUrl || null);
+    setIconFile(null);
     if (category.taxes && category.taxes.length > 0) {
       const totalSlab = category.taxes.reduce((sum, t) => sum + t.slab, 0);
       setTaxRate(totalSlab.toString());
@@ -231,6 +236,18 @@ export default function CategoriesPage() {
     }
   };
 
+  const handleIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIconFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setIconPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const validate = () => {
     try {
       categorySchema.parse({ name, slug, parentCategoryId });
@@ -279,6 +296,10 @@ export default function CategoriesPage() {
     } else if (!editingCategory) {
       setFieldErrors(prev => ({ ...prev, image: 'Category image is required' }));
       return;
+    }
+
+    if (iconFile) {
+      formData.append('icon', iconFile);
     }
 
     try {
@@ -528,37 +549,72 @@ export default function CategoriesPage() {
                 )}
 
                 {/* Image Upload Area */}
-                <div>
-                  <label className="text-xs font-bold text-muted uppercase tracking-wider mb-2 block">Category Image</label>
-                  <div 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="relative aspect-square w-32 rounded-2xl border-2 border-dashed border-border hover:border-brand transition-all bg-background flex flex-col items-center justify-center cursor-pointer overflow-hidden group"
-                  >
-                    {imagePreview ? (
-                      <>
-                        <img src={imagePreview} alt="" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <Upload className="text-white" size={24} />
+                <div className="flex gap-8">
+                  <div className="flex-1">
+                    <label className="text-xs font-bold text-muted uppercase tracking-wider mb-2 block">Category Image</label>
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="relative aspect-square w-full max-w-[160px] rounded-2xl border-2 border-dashed border-border hover:border-brand transition-all bg-background flex flex-col items-center justify-center cursor-pointer overflow-hidden group"
+                    >
+                      {imagePreview ? (
+                        <>
+                          <img src={imagePreview} alt="" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Upload className="text-white" size={24} />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center text-muted group-hover:text-brand transition-colors">
+                          <Upload size={24} className="mb-2" />
+                          <span className="text-[10px] font-bold uppercase tracking-widest">Upload</span>
                         </div>
-                      </>
-                    ) : (
-                      <div className="flex flex-col items-center text-muted group-hover:text-brand transition-colors">
-                        <Upload size={24} className="mb-2" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Upload</span>
-                      </div>
+                      )}
+                      <input 
+                        type="file" 
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden" 
+                        accept="image/*" 
+                      />
+                    </div>
+                    {fieldErrors.image && (
+                      <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{fieldErrors.image}</p>
                     )}
-                    <input 
-                      type="file" 
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
-                      className="hidden" 
-                      accept="image/*" 
-                    />
+                    <p className="text-[10px] text-muted mt-2 italic">* Category Banner (512x512px)</p>
                   </div>
-                  {fieldErrors.image && (
-                    <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{fieldErrors.image}</p>
-                  )}
-                  <p className="text-[10px] text-muted mt-2 italic">* Recommended size: 512x512px (Max 2MB)</p>
+
+                  <div className="flex-1">
+                    <label className="text-xs font-bold text-muted uppercase tracking-wider mb-2 block">Category Icon (Header)</label>
+                    <div 
+                      onClick={() => iconInputRef.current?.click()}
+                      className="relative aspect-square w-full max-w-[160px] rounded-2xl border-2 border-dashed border-border hover:border-brand transition-all bg-background flex flex-col items-center justify-center cursor-pointer overflow-hidden group"
+                    >
+                      {iconPreview ? (
+                        <>
+                          <img src={iconPreview} alt="" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Upload className="text-white" size={24} />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center text-muted group-hover:text-brand transition-colors">
+                          <Upload size={24} className="mb-2" />
+                          <span className="text-[10px] font-bold uppercase tracking-widest">Upload Icon</span>
+                        </div>
+                      )}
+                      <input 
+                        type="file" 
+                        ref={iconInputRef}
+                        onChange={handleIconChange}
+                        className="hidden" 
+                        accept="image/*" 
+                      />
+                    </div>
+                    {fieldErrors.icon && (
+                      <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{fieldErrors.icon}</p>
+                    )}
+                    <p className="text-[10px] text-muted mt-2 italic">* Small icon for header menu</p>
+                  </div>
                 </div>
 
                 {/* Form Fields */}

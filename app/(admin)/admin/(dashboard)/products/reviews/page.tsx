@@ -9,10 +9,14 @@ import {
   User,
   MessageSquare,
   Calendar,
-  Filter
+  Filter,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import Pagination from '@/components/admin/Pagination';
-import { reviews as mockReviews, Review } from '@/lib/mock-data';
+import { useAdminReviews, useUpdateReviewStatus } from '@/lib/hooks/useAdminReviews';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Review } from '@/lib/services/review';
 
 export default function ProductReviewsPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,18 +24,28 @@ export default function ProductReviewsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewingReview, setViewingReview] = useState<Review | null>(null);
 
-  const toggleStatus = (id: string) => {
-    // In a real app, this would be an API call
-    console.log(`Toggling status for review ${id}`);
+  const { data: reviews, isLoading, isError, refetch } = useAdminReviews();
+  const updateStatus = useUpdateReviewStatus();
+
+  const toggleStatus = async (id: string, currentStatus: boolean) => {
+    try {
+      await updateStatus.mutateAsync({ id, isActive: !currentStatus });
+    } catch (error) {
+      console.error('Failed to update review status:', error);
+    }
   };
 
-  const filteredReviews = mockReviews.filter(rev => {
+  const filteredReviews = (reviews || []).filter(rev => {
+    const customerName = typeof rev.userId === 'object' ? rev.userId.name : '';
+    const productTitle = rev.productId?.title || '';
+    
     const matchesSearch = 
-      rev.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rev.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      productTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       rev.comment.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || rev.status === statusFilter;
+    const status = rev.isActive ? 'active' : 'inactive';
+    const matchesStatus = statusFilter === 'all' || status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
@@ -112,17 +126,45 @@ export default function ProductReviewsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {currentReviews.length > 0 ? (
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-6 py-4"><Skeleton className="h-12 w-48" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-12 w-32" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-12 w-64" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-6 w-12" /></td>
+                    <td className="px-6 py-4 text-right"><Skeleton className="h-10 w-10 ml-auto" /></td>
+                  </tr>
+                ))
+              ) : isError ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-20 text-center">
+                    <div className="flex flex-col items-center gap-2 text-red-500">
+                      <AlertCircle size={24} />
+                      <p className="font-bold">Failed to load reviews</p>
+                      <button onClick={() => refetch()} className="text-xs underline">Retry</button>
+                    </div>
+                  </td>
+                </tr>
+              ) : currentReviews.length > 0 ? (
                 currentReviews.map(rev => (
-                  <tr key={rev.id} className="hover:bg-background transition-colors group">
+                  <tr key={rev._id} className="hover:bg-background transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3 max-w-[200px]">
                         <div className="w-12 h-12 rounded-lg bg-background border border-border overflow-hidden shrink-0">
-                          <img src={rev.productImage} alt={rev.productName} className="w-full h-full object-cover" />
+                          <img 
+                            src={rev.productId?.coverImage?.url || '/favicon.png'} 
+                            alt={rev.productId?.title} 
+                            className="w-full h-full object-cover" 
+                          />
                         </div>
                         <div className="truncate">
-                          <div className="text-sm font-bold text-primary truncate" title={rev.productName}>{rev.productName}</div>
-                          <div className="text-[10px] text-muted font-medium uppercase tracking-wider">{rev.productId}</div>
+                          <div className="text-sm font-bold text-primary truncate" title={rev.productId?.title}>
+                            {rev.productId?.title}
+                          </div>
+                          <div className="text-[10px] text-muted font-medium uppercase tracking-wider">
+                            {rev.productId?._id}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -130,11 +172,11 @@ export default function ProductReviewsPage() {
                       <div className="flex flex-col gap-1">
                         <div className="text-sm font-bold text-primary flex items-center gap-1.5">
                           <User size={12} className="text-muted" />
-                          {rev.customerName}
+                          {typeof rev.userId === 'object' ? rev.userId.name : 'Unknown User'}
                         </div>
                         <div className="text-[10px] text-muted font-medium flex items-center gap-1">
                           <Calendar size={10} />
-                          {rev.date}
+                          {new Date(rev.createdAt).toLocaleDateString()}
                         </div>
                       </div>
                     </td>
@@ -159,14 +201,15 @@ export default function ProductReviewsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <button
-                        onClick={() => toggleStatus(rev.id)}
+                        onClick={() => toggleStatus(rev._id, rev.isActive)}
+                        disabled={updateStatus.isPending}
                         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                          rev.status === 'active' ? 'bg-brand' : 'bg-gray-300'
-                        }`}
+                          rev.isActive ? 'bg-brand' : 'bg-gray-300'
+                        } ${updateStatus.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         <span
                           className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                            rev.status === 'active' ? 'translate-x-5' : 'translate-x-1'
+                            rev.isActive ? 'translate-x-5' : 'translate-x-1'
                           }`}
                         />
                       </button>
@@ -220,7 +263,7 @@ export default function ProductReviewsPage() {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-primary">Review Details</h2>
-                  <p className="text-xs text-muted">Review submitted on {viewingReview.date}</p>
+                  <p className="text-xs text-muted">Review submitted on {new Date(viewingReview.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
               <button 
@@ -234,10 +277,14 @@ export default function ProductReviewsPage() {
             <div className="p-8 space-y-6">
               {/* Product Info */}
               <div className="flex items-center gap-4 p-4 bg-background rounded-2xl border border-border">
-                <img src={viewingReview.productImage} alt={viewingReview.productName} className="w-16 h-16 rounded-xl object-cover border border-border" />
+                <img 
+                  src={viewingReview.productId?.coverImage?.url || '/favicon.png'} 
+                  alt={viewingReview.productId?.title} 
+                  className="w-16 h-16 rounded-xl object-cover border border-border" 
+                />
                 <div>
-                  <h4 className="font-bold text-primary">{viewingReview.productName}</h4>
-                  <p className="text-xs text-muted font-medium mt-0.5">ID: {viewingReview.productId}</p>
+                  <h4 className="font-bold text-primary">{viewingReview.productId?.title}</h4>
+                  <p className="text-xs text-muted font-medium mt-0.5">ID: {viewingReview.productId?._id}</p>
                 </div>
               </div>
 
@@ -247,9 +294,11 @@ export default function ProductReviewsPage() {
                   <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">Reviewer</p>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center text-brand-dark font-bold text-sm">
-                      {viewingReview.customerName.charAt(0)}
+                      {(typeof viewingReview.userId === 'object' ? viewingReview.userId.name : 'U').charAt(0)}
                     </div>
-                    <span className="text-sm font-bold text-primary">{viewingReview.customerName}</span>
+                    <span className="text-sm font-bold text-primary">
+                      {typeof viewingReview.userId === 'object' ? viewingReview.userId.name : 'Unknown User'}
+                    </span>
                   </div>
                 </div>
                 <div className="text-right">
@@ -271,22 +320,23 @@ export default function ProductReviewsPage() {
                 <div className="flex items-center gap-3">
                   <p className="text-xs font-bold text-muted uppercase tracking-wider">Public Visibility</p>
                   <button
-                    onClick={() => toggleStatus(viewingReview.id)}
+                    onClick={() => toggleStatus(viewingReview._id, viewingReview.isActive)}
+                    disabled={updateStatus.isPending}
                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                      viewingReview.status === 'active' ? 'bg-brand' : 'bg-gray-300'
-                    }`}
+                      viewingReview.isActive ? 'bg-brand' : 'bg-gray-300'
+                    } ${updateStatus.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <span
                       className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                        viewingReview.status === 'active' ? 'translate-x-5' : 'translate-x-1'
+                        viewingReview.isActive ? 'translate-x-5' : 'translate-x-1'
                       }`}
                     />
                   </button>
                 </div>
                 <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                  viewingReview.status === 'active' ? 'bg-brand/10 text-brand-dark' : 'bg-muted/10 text-muted'
+                  viewingReview.isActive ? 'bg-brand/10 text-brand-dark' : 'bg-muted/10 text-muted'
                 }`}>
-                  {viewingReview.status}
+                  {viewingReview.isActive ? 'active' : 'inactive'}
                 </div>
               </div>
             </div>

@@ -31,8 +31,18 @@ export interface CartItem {
   effectiveTax?: TaxSlab[] | null;
 }
 
+export interface AppliedCoupon {
+  code: string;
+  type: string;
+  value: number;
+  maxDiscount: number;
+  minOrderValue: number;
+  calculatedDiscount: number;
+}
+
 interface CartState {
   items: CartItem[];
+  appliedCoupon: AppliedCoupon | null;
   isLoading: boolean;
   isDirty: boolean; // True if local changes are not yet synced to backend
   isOpen: boolean;
@@ -46,12 +56,15 @@ interface CartState {
   fetchCart: () => Promise<void>;
   mergeCart: (backendItems: CartItem[]) => void;
   fetchAndMerge: () => Promise<void>;
+  setAppliedCoupon: (coupon: AppliedCoupon | null) => void;
+  removeCoupon: () => void;
 }
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      appliedCoupon: null,
       isLoading: false,
       isDirty: false,
       isOpen: false,
@@ -84,7 +97,7 @@ export const useCartStore = create<CartState>()(
         } else {
           newItems = [...items, normalized];
         }
-        set({ items: newItems, isDirty: true });
+        set({ items: newItems, isDirty: true, appliedCoupon: null });
       },
 
       removeItem: (variantId) => {
@@ -93,6 +106,7 @@ export const useCartStore = create<CartState>()(
             extractVariantId(i.variantId as string | Record<string, unknown>) !== variantId
           ),
           isDirty: true,
+          appliedCoupon: null,
         });
       },
 
@@ -115,11 +129,11 @@ export const useCartStore = create<CartState>()(
               : i
           );
         }
-        set({ items: newItems, isDirty: true });
+        set({ items: newItems, isDirty: true, appliedCoupon: null });
       },
 
       clearCart: async () => {
-        set({ items: [], isDirty: false });
+        set({ items: [], isDirty: false, appliedCoupon: null });
         try {
           await cartApi.clear();
         } catch (error) {
@@ -240,6 +254,9 @@ export const useCartStore = create<CartState>()(
           console.error('Failed to fetch and merge cart', error);
         }
       },
+
+      setAppliedCoupon: (appliedCoupon) => set({ appliedCoupon }),
+      removeCoupon: () => set({ appliedCoupon: null }),
     }),
     {
       name: 'pahadi-cart-storage',
@@ -247,6 +264,7 @@ export const useCartStore = create<CartState>()(
         items: state.items,
         lastSyncedAt: state.lastSyncedAt,
         isDirty: state.isDirty,
+        appliedCoupon: state.appliedCoupon,
       }),
     }
   )

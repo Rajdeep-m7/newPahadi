@@ -31,6 +31,7 @@ export type HeaderCategory = {
   name: string;
   slug: string;
   imageUrl?: string;
+  iconUrl?: string;
 };
 
 type HeaderClientProps = {
@@ -70,7 +71,7 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
   );
 
   return (
-    <header className="max-w-[1536px] w-full px-4 sm:px-7 lg:px-16 sticky top-0 z-50 bg-white border-b border-gray-50">
+    <header className="max-w-384 w-full px-4 sm:px-7 lg:px-16 sticky top-0 z-50 bg-white border-b border-gray-50">
       <div className="flex items-center justify-between gap-4 py-1.5 md:py-2">
         <div className="flex items-center gap-2">
           <button onClick={() => setOpen(true)} className="lg:hidden">
@@ -124,7 +125,7 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
             <IoIosHeartEmpty className="cursor-pointer text-2xl text-gray-700 transition-all hover:text-amber-500" />
 
             {wishlistCount > 0 && (
-              <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1 text-[11px] font-semibold text-white">
+              <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1 text-[11px] font-semibold text-white">
                 {wishlistCount}
               </span>
             )}
@@ -202,7 +203,7 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
           <Link href="/cart" className="relative">
             <IoCartOutline className="cursor-pointer text-2xl text-gray-700 transition-all hover:text-amber-500" />
             {totalCartQuantity > 0 && (
-              <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1 text-[11px] font-semibold text-white">
+              <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1 text-[11px] font-semibold text-white">
                 {totalCartQuantity}
               </span>
             )}
@@ -229,7 +230,7 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
         </div>
       )}
 
-      <div className="max-w-[1536px] hidden lg:block border-t border-gray-100 py-1">
+      <div className="max-w-384 hidden lg:block border-t border-gray-100 py-1">
         <Swiper
           modules={[FreeMode, Mousewheel, Autoplay]}
           slidesPerView="auto"
@@ -253,7 +254,7 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
             <SwiperSlide key={item.slug} style={{ width: "auto" }}>
               <MenuItem
                 title={item.name}
-                image={item.imageUrl || fallbackIcon}
+                image={item.iconUrl || fallbackIcon}
                 href={`/category/${item.slug}`}
               />
             </SwiperSlide>
@@ -279,7 +280,7 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
             <MenuItem
               key={item.slug}
               title={item.name}
-              image={item.imageUrl || fallbackIcon}
+              image={item.iconUrl || item.imageUrl || fallbackIcon}
               href={`/category/${item.slug}`}
               onClick={() => setOpen(false)}
             />

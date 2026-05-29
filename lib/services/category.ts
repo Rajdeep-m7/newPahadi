@@ -7,6 +7,8 @@ export interface Category {
   slug: string;
   imageUrl: string;
   imagePublicId: string;
+  iconUrl?: string;
+  iconPublicId?: string;
   parentCategoryId: string | null;
   productCount?: number;
   children?: Category[];
