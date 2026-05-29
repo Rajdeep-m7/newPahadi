@@ -9,14 +9,26 @@ import { useCustomerStore } from "@/lib/store/useCustomerStore";
 type ReviewModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  productId: string;
-  productName: string;
+  productId?: string;
+  productName?: string;
   onSuccess?: () => void;
+  mode?: "create" | "edit";
+  initialData?: { rating: number; comment: string };
+  reviewId?: string;
 };
 
-const ReviewModal = ({ isOpen, onClose, productId, productName, onSuccess }: ReviewModalProps) => {
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState("");
+const ReviewModal = ({ 
+  isOpen, 
+  onClose, 
+  productId, 
+  productName, 
+  onSuccess,
+  mode = "create",
+  initialData,
+  reviewId
+}: ReviewModalProps) => {
+  const [rating, setRating] = useState(initialData?.rating ?? 5);
+  const [comment, setComment] = useState(initialData?.comment ?? "");
   const [hoveredRating, setHoveredRating] = useState(0);
   const [images, setImages] = useState<{ url: string; file: File }[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -70,22 +82,34 @@ const ReviewModal = ({ isOpen, onClose, productId, productName, onSuccess }: Rev
         formData.append("images", img.file);
       });
 
-      const response = await shopApi.post(`/reviews/product/${productId}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
+      let response;
+      if (mode === "create") {
+        response = await shopApi.post(`/reviews/product/${productId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+      } else {
+        // For updates, we might need a different way to handle images if we want to preserve old ones,
+        // but the backend updateReview currently replaces all images if new ones are provided.
+        // Also, PATCH /reviews/:id
+        response = await shopApi.patch(`/reviews/${reviewId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+      }
 
       if (response.data.success) {
-        toast.success(response.data.message || "Review submitted successfully");
-        setComment("");
-        setRating(5);
-        setImages([]);
+        toast.success(response.data.message || `Review ${mode === "create" ? "submitted" : "updated"} successfully`);
+        if (mode === "create") {
+          setComment("");
+          setRating(5);
+          setImages([]);
+        }
         onSuccess?.();
         onClose();
       } else {
-        toast.error(response.data.message || "Failed to submit review");
+        toast.error(response.data.message || "Failed to process review");
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to submit review");
+      toast.error(error.response?.data?.message || "Failed to process review");
     } finally {
       setSubmitting(false);
     }
@@ -97,8 +121,8 @@ const ReviewModal = ({ isOpen, onClose, productId, productName, onSuccess }: Rev
         {/* Header */}
         <div className="px-8 pt-8 pb-4 flex items-center justify-between border-b border-gray-50">
           <div>
-            <h3 className="text-xl font-bold text-gray-900">Write a Review</h3>
-            <p className="text-xs font-medium text-gray-500 mt-1 line-clamp-1">For {productName}</p>
+            <h3 className="text-xl font-bold text-gray-900">{mode === "create" ? "Write a Review" : "Edit Your Review"}</h3>
+            {productName && <p className="text-xs font-medium text-gray-500 mt-1 line-clamp-1">For {productName}</p>}
           </div>
           <button 
             onClick={onClose}
@@ -152,7 +176,7 @@ const ReviewModal = ({ isOpen, onClose, productId, productName, onSuccess }: Rev
 
           <div>
             <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
-              Upload Photos (Optional)
+              Upload Photos {mode === "edit" ? "(Replaces current photos)" : "(Optional)"}
             </label>
             <div className="mt-2 flex flex-wrap gap-3">
               {images.map((img, idx) => (
@@ -198,7 +222,7 @@ const ReviewModal = ({ isOpen, onClose, productId, productName, onSuccess }: Rev
             ) : (
               <>
                 <FiSend size={18} />
-                Post Review
+                {mode === "create" ? "Post Review" : "Update Review"}
               </>
             )}
           </button>

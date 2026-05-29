@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { Star, MessageCircle, Edit2, Trash2, Loader2, Package } from "lucide-react";
-import { shopApi } from "@/lib/fetchers";
+import { Star, MessageCircle, Edit2, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { getUserReviews, deleteUserReview } from "@/lib/services/review";
+import ReviewModal from "@/components/ReviewModal";
 
 interface Review {
   _id: string;
@@ -22,6 +23,10 @@ interface Review {
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Edit Modal State
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
 
   useEffect(() => {
     fetchMyReviews();
@@ -30,12 +35,11 @@ export default function ReviewsPage() {
   const fetchMyReviews = async () => {
     setIsLoading(true);
     try {
-      const response = await shopApi.get('/reviews/me');
-      if (response.data.success) {
-        setReviews(response.data.data.reviews || []);
-      }
+      const data = await getUserReviews();
+      setReviews(data as any);
     } catch (error) {
       console.error("Failed to fetch reviews", error);
+      toast.error("Failed to load reviews");
     } finally {
       setIsLoading(false);
     }
@@ -45,14 +49,21 @@ export default function ReviewsPage() {
     if (!confirm("Are you sure you want to delete this review?")) return;
 
     try {
-      const response = await shopApi.delete(`/reviews/${reviewId}`);
-      if (response.data.success) {
-        toast.success("Review deleted successfully");
+      const response = await deleteUserReview(reviewId);
+      if (response.success) {
+        toast.success(response.message);
         setReviews(prev => prev.filter(r => r._id !== reviewId));
+      } else {
+        toast.error(response.message);
       }
     } catch (error) {
       toast.error("Failed to delete review");
     }
+  };
+
+  const handleEditClick = (review: Review) => {
+    setSelectedReview(review);
+    setEditModalOpen(true);
   };
 
   return (
@@ -81,9 +92,9 @@ export default function ReviewsPage() {
                 {/* Product Info */}
                 <div className="w-full md:w-40 shrink-0">
                   <div className="aspect-square rounded-lg bg-[#F5F5F5] p-3 mb-3">
-                    <img src={review.productId.image || "/favicon.png"} alt="" className="w-full h-full object-contain mix-blend-multiply" />
+                    <img src={review.productId?.image || "/favicon.png"} alt="" className="w-full h-full object-contain mix-blend-multiply" />
                   </div>
-                  <h3 className="text-[13px] font-bold text-[#222222] leading-tight line-clamp-2">{review.productId.title}</h3>
+                  <h3 className="text-[13px] font-bold text-[#222222] leading-tight line-clamp-2">{review.productId?.title || "Unknown Product"}</h3>
                 </div>
 
                 {/* Review Content */}
@@ -112,6 +123,12 @@ export default function ReviewsPage() {
 
                   <div className="flex items-center gap-5 pt-5 border-t border-[#CCCCCC]/10">
                     <button 
+                      onClick={() => handleEditClick(review)}
+                      className="text-[11px] font-bold text-[#222222] uppercase tracking-widest flex items-center gap-2 hover:text-amber-500 transition-colors"
+                    >
+                      <Edit2 size={12} /> Edit Review
+                    </button>
+                    <button 
                       onClick={() => handleDelete(review._id)}
                       className="text-[11px] font-bold text-red-500 uppercase tracking-widest flex items-center gap-2 hover:opacity-70 transition-colors"
                     >
@@ -130,6 +147,24 @@ export default function ReviewsPage() {
           <p className="text-sm text-[#666666] mb-6">You haven't shared your thoughts on any products yet.</p>
           <a href="/account/orders" className="bg-[#222222] text-white px-6 py-2.5 rounded-full font-bold text-[12px] uppercase tracking-widest hover:bg-amber-500 transition-all inline-block">Review Your Orders</a>
         </div>
+      )}
+
+      {selectedReview && (
+        <ReviewModal
+          isOpen={editModalOpen}
+          onClose={() => {
+            setEditModalOpen(false);
+            setSelectedReview(null);
+          }}
+          mode="edit"
+          reviewId={selectedReview._id}
+          productName={selectedReview.productId?.title}
+          initialData={{
+            rating: selectedReview.rating,
+            comment: selectedReview.comment
+          }}
+          onSuccess={fetchMyReviews}
+        />
       )}
     </div>
   );

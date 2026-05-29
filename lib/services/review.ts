@@ -8,7 +8,7 @@ export interface ReviewImage {
 export interface Review {
   _id: string;
   userId: string | { _id: string; name: string };
-  productId: string;
+  productId: any;
   rating: number;
   comment: string;
   isActive: boolean;
@@ -43,6 +43,53 @@ export async function createReview(
     return {
       success: false,
       message: error.response?.data?.message || "Failed to submit review",
+    };
+  }
+}
+
+export async function getUserReviews(): Promise<Review[]> {
+  try {
+    const response = await shopApi.get("/reviews/user");
+    return response.data.data || [];
+  } catch (error) {
+    console.error("Error fetching user reviews:", error);
+    return [];
+  }
+}
+
+export async function updateReview(
+  reviewId: string,
+  data: { rating?: number; comment?: string; images?: ReviewImage[] }
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const response = await shopApi.patch(`/reviews/${reviewId}`, data);
+    return {
+      success: true,
+      message: response.data.message || "Review updated successfully",
+    };
+  } catch (error: any) {
+    console.error(`Error updating review ${reviewId}:`, error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to update review",
+    };
+  }
+}
+
+export async function deleteUserReview(
+  reviewId: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const response = await shopApi.delete(`/reviews/${reviewId}`);
+    return {
+      success: true,
+      message: response.data.message || "Review deleted successfully",
+    };
+  } catch (error: any) {
+    console.error(`Error deleting review ${reviewId}:`, error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to delete review",
     };
   }
 }

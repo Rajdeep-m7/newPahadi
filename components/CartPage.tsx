@@ -10,12 +10,13 @@ const CartPage = () => {
   const { items: cartItems, updateQuantity, removeItem } = useCartStore();
 
   const subtotal = cartItems.reduce(
-    (acc, item) => acc + (item.price || 0) * item.quantity,
+    (acc, item) => acc + (item.isActive === false ? 0 : (item.price || 0) * item.quantity),
     0
   );
 
   // Calculate total tax based on each item's effectiveTax slabs
   const totalTax = cartItems.reduce((acc, item) => {
+    if (item.isActive === false) return acc;
     if (!item.effectiveTax || item.effectiveTax.length === 0) return acc;
     const itemPrice = item.price || 0;
     const itemTax = item.effectiveTax.reduce((tAcc, slab) => {
@@ -84,14 +85,14 @@ const CartPage = () => {
                     </h3>
 
                     {/* STOCK STATUS */}
-                    {(item.stock !== undefined && item.stock <= 0) && (
+                    {(item.isActive === false || (item.stock !== undefined && item.stock <= 0)) && (
                       <div className="mt-1">
                         <span className="inline-flex items-center rounded-lg bg-red-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-red-600 border border-red-100">
-                          Out of Stock
+                          {item.isActive === false ? "Deactivated" : "Out of Stock"}
                         </span>
                       </div>
                     )}
-                    {item.stock !== undefined && item.stock > 0 && item.quantity > item.stock && (
+                    {item.isActive !== false && item.stock !== undefined && item.stock > 0 && item.quantity > item.stock && (
                       <div className="mt-1">
                         <span className="inline-flex items-center rounded-lg bg-orange-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-orange-600 border border-orange-100">
                           Only {item.stock} left in stock
@@ -206,17 +207,17 @@ const CartPage = () => {
             </div>
 
             <Link 
-              href={cartItems.some(i => (i.stock !== undefined && (i.stock <= 0 || i.quantity > i.stock))) ? "#" : "/checkout"} 
+              href={cartItems.some(i => i.isActive === false || (i.stock !== undefined && (i.stock <= 0 || i.quantity > i.stock))) ? "#" : "/checkout"} 
               className={`mt-8 flex h-14 w-full items-center justify-center gap-3 rounded-2xl text-sm font-bold uppercase tracking-widest text-white transition-all shadow-xl shadow-gray-200 ${
-                cartItems.some(i => (i.stock !== undefined && (i.stock <= 0 || i.quantity > i.stock)))
+                cartItems.some(i => i.isActive === false || (i.stock !== undefined && (i.stock <= 0 || i.quantity > i.stock)))
                 ? "bg-gray-400 cursor-not-allowed opacity-50"
                 : "bg-[#222222] hover:bg-amber-500"
               }`}
-              title={cartItems.some(i => (i.stock !== undefined && (i.stock <= 0 || i.quantity > i.stock))) ? "Please remove out of stock items to proceed" : ""}
+              title={cartItems.some(i => i.isActive === false || (i.stock !== undefined && (i.stock <= 0 || i.quantity > i.stock))) ? "Please remove out of stock or deactivated items to proceed" : ""}
               onClick={(e) => {
-                if (cartItems.some(i => (i.stock !== undefined && (i.stock <= 0 || i.quantity > i.stock)))) {
+                if (cartItems.some(i => i.isActive === false || (i.stock !== undefined && (i.stock <= 0 || i.quantity > i.stock)))) {
                   e.preventDefault();
-                  toast.error("Please remove out of stock items to proceed");
+                  toast.error("Please remove out of stock or deactivated items to proceed");
                 }
               }}
             >

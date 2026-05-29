@@ -23,7 +23,7 @@ import Link from "next/link";
 
 const Footer = () => {
   return (
-    <footer className="w-full bg-[#f7f7f7] border-t border-amber-200 mt-16">
+    <footer className="w-full bg-[#f7f7f7] border-t border-amber-200">
       
       {/* TOP SECTION */}
       <div className="page-shell py-12">

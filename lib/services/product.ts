@@ -17,9 +17,11 @@ export interface Product {
   slug: string;
   categoryId?: string;
   isPublished?: boolean;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
   variantId?: string;
+  stocks?: number;
   effectiveTax?: TaxDetail[];
 }
 
@@ -116,6 +118,8 @@ export function mapProduct(prod: any): Product {
     slug: prod.default_slug || prod.slug,
     variantId: prod.defaultVariantId || prod.variantId,
     categoryId: typeof prod.categoryId === 'object' ? prod.categoryId?._id : prod.categoryId,
+    isActive: prod.isActive !== false && prod.defaultVariant?.isActive !== false,
+    stocks: prod.stocks ?? prod.defaultVariant?.stocks ?? prod.stock,
     effectiveTax: prod.effectiveTax || prod.defaultVariant?.effectiveTax || null,
   };
 }
@@ -134,7 +138,9 @@ export async function getProducts(params: GetProductsParams = {}): Promise<Produ
     const data = response.data.data || {};
     const products = Array.isArray(data) ? data : (data.products || []);
 
-    return products.map((prod: any) => mapProduct(prod));
+    return products
+      .filter((prod: any) => prod.isPublished !== false && prod.isActive !== false)
+      .map((prod: any) => mapProduct(prod));
   } catch (error) {
     console.error("Error fetching products:", error);
     return [];
@@ -149,7 +155,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     
     const data = response.data.data || {};
     const products = Array.isArray(data) ? data : (data.products || []);
-    const product = products.find((p: any) => p.slug === slug || p.default_slug === slug);
+    const product = products.find((p: any) => (p.slug === slug || p.default_slug === slug) && p.isPublished !== false && p.isActive !== false);
     
     if (!product) return null;
 
@@ -163,7 +169,14 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 export const getVariantBySlug = cache(async function getVariantBySlug(slug: string): Promise<VariantResponse | null> {
   try {
     const response = await shopApi.get(`/variants/slug/${slug}`);
-    return response.data.data;
+    const data = response.data.data;
+
+    // Filter out inactive variants or unpublished products
+    if (!data || !data.currentVariant?.isActive || data.currentVariant?.productId?.isPublished === false) {
+      return null;
+    }
+
+    return data;
   } catch (error) {
     console.error(`Error fetching variant by slug ${slug}:`, error);
     return null;
@@ -174,7 +187,9 @@ export async function getSimilarProducts(productId: string): Promise<Product[]> 
   try {
     const response = await shopApi.get(`/products/${productId}/similar`);
     const data = response.data.data || [];
-    return data.map((prod: any) => mapProduct(prod));
+    return data
+      .filter((prod: any) => prod.isPublished !== false && prod.isActive !== false)
+      .map((prod: any) => mapProduct(prod));
   } catch (error) {
     console.error(`Error fetching similar products for ${productId}:`, error);
     return [];
@@ -286,7 +301,9 @@ export async function getProductsByCategorySlug(
     const totalPages = Math.ceil(total / limit) || 1;
 
     return {
-      products: (data.products || []).map((prod: any) => mapProduct(prod)),
+      products: (data.products || [])
+        .filter((prod: any) => prod.isPublished !== false && prod.isActive !== false)
+        .map((prod: any) => mapProduct(prod)),
       total,
       page: data.page || page,
       totalPages,
@@ -325,7 +342,9 @@ export async function getHomeData() {
     
     return activeSections.map((section: any) => ({
       ...section,
-      products: (section.products || []).map((prod: any) => mapProduct(prod))
+      products: (section.products || [])
+        .filter((prod: any) => prod.isPublished !== false && prod.isActive !== false)
+        .map((prod: any) => mapProduct(prod))
     }));
   } catch (error) {
     console.error("Error fetching home data:", error);

@@ -54,10 +54,13 @@ const CategoryPage = ({
   };
 
   const filteredProducts = useMemo(() => {
-    let result = [...products];
+    let result = products.filter(p => p.isActive !== false);
+    
     if (inStockOnly) {
-      // Assuming stock > 0 or explicitly defined in mock data
-      result = result.filter(p => (p as any).stock !== 0);
+      result = result.filter(p => {
+        const stockValue = p.stocks;
+        return stockValue === undefined || stockValue > 0;
+      });
     }
     return result.sort((a, b) => {
       if (sortBy === "lowToHigh") return a.price - b.price;

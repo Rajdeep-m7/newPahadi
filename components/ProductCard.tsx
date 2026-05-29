@@ -57,7 +57,10 @@ const ProductCard = ({
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
   const addItem = useCartStore((state) => state.addItem);
 
-  const isOutOfStock = (wishlistProduct as any).stocks <= 0 || (wishlistProduct as any).stock <= 0;
+  const stockValue = (wishlistVariantId as any).stocks ?? (wishlistProduct as any).stock;
+  const isOutOfStock = (stockValue !== undefined && stockValue <= 0) || wishlistProduct.isActive === false;
+
+  console.log(stockValue)
 
   const handleWishlist = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -94,7 +97,7 @@ const ProductCard = ({
       image: wishlistProduct.image,
       price: wishlistProduct.price,
       mrp: wishlistProduct.mrp,
-      stock: (wishlistProduct as any).stocks || (wishlistProduct as any).stock || 0,
+      stock: (wishlistProduct as any).stocks ?? (wishlistProduct as any).stock,
       effectiveTax: wishlistProduct.effectiveTax,
     });
     toast.success("Item added to Cart!",{
@@ -139,19 +142,17 @@ const ProductCard = ({
           )}
         </button>
 
-        <div className="absolute bottom-4 left-1/2 hidden w-[88%] -translate-x-1/2 translate-y-20 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 md:block">
-
-          <button 
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-            className={`flex w-full items-center justify-center gap-3 rounded-xl py-2 text-lg font-semibold text-white transition-all duration-300 ${isOutOfStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#b98b5f] hover:bg-[#a67a52]'}`}
-          >
-
-            <FiShoppingBag className="text-xl" />
-
-            {isOutOfStock ? 'Out of Stock' : 'Quick Add'}
-          </button>
-        </div>
+        {!isOutOfStock && (
+          <div className="absolute bottom-4 left-1/2 hidden w-[88%] -translate-x-1/2 translate-y-20 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 md:block">
+            <button 
+              onClick={handleAddToCart}
+              className="flex w-full items-center justify-center gap-3 rounded-xl py-2 text-lg font-semibold text-white transition-all duration-300 bg-[#b98b5f] hover:bg-[#a67a52]"
+            >
+              <FiShoppingBag className="text-xl" />
+              Quick Add
+            </button>
+          </div>
+        )}
       </Link>
 
       <div className="p-3">
@@ -191,16 +192,15 @@ const ProductCard = ({
         </div>
 
         {/* Mobile Quick Add Button */}
-        <button 
-          onClick={handleAddToCart}
-          disabled={isOutOfStock}
-          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold text-white md:hidden ${isOutOfStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#b98b5f]'}`}
-        >
-
-          <FiShoppingBag className="text-lg" />
-
-          {isOutOfStock ? 'Out of Stock' : 'Quick Add'}
-        </button>
+        {!isOutOfStock && (
+          <button 
+            onClick={handleAddToCart}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold text-white md:hidden bg-[#b98b5f]"
+          >
+            <FiShoppingBag className="text-lg" />
+            Quick Add
+          </button>
+        )}
       </div>
     </div>
   );

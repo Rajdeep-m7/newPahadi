@@ -2,7 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/lib/store/useAuthStore';
 import { useCustomerStore } from '@/lib/store/useCustomerStore';
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
 // --- Refresh Logic State ---
 let isRefreshingAdmin = false;

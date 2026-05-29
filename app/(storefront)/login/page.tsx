@@ -3,7 +3,7 @@ import Registration from '@/components/Registration'
 const page = () => {
   return (
     <div>
-        <main className='main-shell'>
+        <main>
             <Registration />
         </main>
     </div>

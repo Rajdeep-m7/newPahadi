@@ -19,6 +19,7 @@ import { shopApi } from "@/lib/fetchers";
 import { toast } from "sonner";
 import ProductCard from "./ProductCard";
 import ReviewSection from "./ReviewSection";
+import Link from "next/link";
 
 type ProductPageProps = {
   product?: Product | null;
@@ -37,10 +38,31 @@ const formatPrice = (price: number) =>
   }).format(price);
 
 const ProductPage = ({ product, variant, similarProducts = [] }: ProductPageProps) => {
+  if (!product && !variant) {
+    return (
+      <section className="min-h-[60vh] flex flex-col items-center justify-center bg-[#fafafa] py-12 px-4">
+        <div className="text-center">
+          <div className="mb-6 flex justify-center text-gray-300">
+            <svg className="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Product Not Found</h1>
+          <p className="mt-4 text-gray-500">The product you are looking for might have been moved or deactivated.</p>
+          <Link
+            href="/"
+            className="mt-8 inline-flex items-center justify-center rounded-full bg-[#b98b5f] px-8 py-3 text-sm font-medium text-white transition hover:bg-[#a67a52]"
+          >
+            Go Back Home
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
   const currentVariant = variant?.currentVariant;
   const productDetails = currentVariant?.productId;
   const title = currentVariant?.title || product?.title || "Product";
-  console.log(product)
 
   const description =
     productDetails?.desc ||
@@ -112,7 +134,7 @@ const ProductPage = ({ product, variant, similarProducts = [] }: ProductPageProp
 
   const addItem = useCartStore((state) => state.addItem);
 
-  const isOutOfStock = (currentVariant?.stocks ?? 0) <= 0;
+  const isOutOfStock = (currentVariant?.stocks !== undefined && currentVariant.stocks <= 0) || currentVariant?.isActive === false;
 
   const handleWishlist = async () => {
     if (!wishlistVariantId) return;
@@ -142,7 +164,7 @@ const ProductPage = ({ product, variant, similarProducts = [] }: ProductPageProp
       image: wishlistProduct.image,
       price: wishlistProduct.price,
       mrp: wishlistProduct.mrp,
-      stock: currentVariant?.stocks || 0,
+      stock: currentVariant?.stocks,
       effectiveTax:
         currentVariant?.effectiveTax ||
         variant?.effectiveTax ||
@@ -574,6 +596,34 @@ const ProductPage = ({ product, variant, similarProducts = [] }: ProductPageProp
           </div>
         </div>
       )}
+
+      {/* MOBILE STICKY BOTTOM ACTIONS */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-100 bg-white p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] xl:hidden animate-in slide-in-from-bottom duration-500">
+        <div className="flex gap-3">
+          <button
+            onClick={handleWishlist}
+            disabled={isWishlistPending || !wishlistVariantId}
+            className={`flex h-14 w-14 items-center justify-center rounded-2xl border transition-all ${
+              isWishlisted ? "bg-red-50 border-red-100 text-red-500" : "bg-gray-50 border-gray-100 text-gray-700"
+            }`}
+          >
+            {isWishlisted ? <IoHeart size={24} /> : <IoHeartOutline size={24} />}
+          </button>
+          
+          <button
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+            className={`flex h-14 flex-1 items-center justify-center gap-3 rounded-2xl text-sm font-bold uppercase tracking-widest transition-all shadow-xl shadow-gray-200 ${
+              isOutOfStock 
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+                : "bg-[#222222] text-white hover:bg-amber-500"
+            }`}
+          >
+            <FiShoppingBag size={20} />
+            {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

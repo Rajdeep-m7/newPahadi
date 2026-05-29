@@ -5,7 +5,7 @@ import { useCartStore } from '@/lib/store/useCartStore';
 import { useCustomerStore } from '@/lib/store/useCustomerStore';
 import { cartApi } from '@/lib/api/cart';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ;
 const DEBOUNCE_MS = 1500;
 
 function buildPayload(items: { variantId: string; quantity: number }[]) {

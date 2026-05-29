@@ -27,6 +27,7 @@ export interface CartItem {
   price?: number;
   mrp?: number;
   stock?: number;
+  isActive?: boolean;
   effectiveTax?: TaxSlab[] | null;
 }
 
@@ -62,7 +63,7 @@ export const useCartStore = create<CartState>()(
         const variantIdStr = extractVariantId(item.variantId as string | Record<string, unknown>);
         const normalized = { ...item, variantId: variantIdStr };
 
-        if ((item.stock ?? 0) <= 0) {
+        if (item.stock !== undefined && item.stock <= 0) {
           return; // Handled by UI toast
         }
 
@@ -149,25 +150,27 @@ export const useCartStore = create<CartState>()(
           const rawItems = response.data.data?.items || [];
           const currentLocalItems = get().items;
 
-          const backendItems: CartItem[] = rawItems.map((item: any) => {
-            const vid = item.variantId;
-            const vidObj = (vid && typeof vid === 'object' ? vid : {}) as any;
-            const vidStr = extractVariantId(vid);
-            
-            // Find if we already have this item locally to preserve its tax/rich data
-            const existingLocal = currentLocalItems.find(i => extractVariantId(i.variantId) === vidStr);
+          const backendItems: CartItem[] = rawItems
+            .map((item: any) => {
+              const vid = item.variantId;
+              const vidObj = (vid && typeof vid === 'object' ? vid : {}) as any;
+              const vidStr = extractVariantId(vid);
+              
+              // Find if we already have this item locally to preserve its tax/rich data
+              const existingLocal = currentLocalItems.find(i => extractVariantId(i.variantId) === vidStr);
 
-            return {
-              variantId: vidStr,
-              quantity: item.quantity ?? 1,
-              title: vidObj.title || item.title || existingLocal?.title,
-              image: vidObj.coverImage?.url || vidObj.image || item.image || existingLocal?.image,
-              price: vidObj.price || item.price || existingLocal?.price,
-              mrp: vidObj.mrp || item.mrp || vidObj.price || item.price || existingLocal?.mrp,
-              stock: vidObj.stocks || vidObj.stock || item.stock || existingLocal?.stock,
-              effectiveTax: vidObj.effectiveTax || item.effectiveTax || existingLocal?.effectiveTax || null,
-            };
-          });
+              return {
+                variantId: vidStr,
+                quantity: item.quantity ?? 1,
+                title: vidObj.title || item.title || existingLocal?.title,
+                image: vidObj.coverImage?.url || vidObj.image || item.image || existingLocal?.image,
+                price: vidObj.price || item.price || existingLocal?.price,
+                mrp: vidObj.mrp || item.mrp || vidObj.price || item.price || existingLocal?.mrp,
+                stock: vidObj.stocks ?? vidObj.stock ?? item.stock ?? existingLocal?.stock,
+                isActive: vidObj.isActive !== false && vidObj.productId?.isPublished !== false,
+                effectiveTax: vidObj.effectiveTax || item.effectiveTax || existingLocal?.effectiveTax || null,
+              };
+            });
           set({ items: backendItems, isLoading: false, isDirty: false });
         } catch (error) {
           set({ isLoading: false });
@@ -198,6 +201,7 @@ export const useCartStore = create<CartState>()(
               image: item.image || existing.image,
               price: item.price || existing.price,
               stock: item.stock || existing.stock,
+              isActive: item.isActive ?? existing.isActive,
               effectiveTax: item.effectiveTax || existing.effectiveTax,
             });
           } else {
@@ -213,20 +217,22 @@ export const useCartStore = create<CartState>()(
         try {
           const response = await cartApi.get();
           const rawItems = response.data.data?.items || [];
-          const backendItems: CartItem[] = rawItems.map((item: any) => {
-            const vid = item.variantId;
-            const vidObj = (vid && typeof vid === 'object' ? vid : {}) as any;
-            return {
-              variantId: extractVariantId(vid),
-              quantity: item.quantity ?? 1,
-              title: vidObj.title || item.title,
-              image: vidObj.coverImage?.url || vidObj.image || item.image,
-              price: vidObj.price || item.price,
-              mrp: vidObj.mrp || item.mrp || vidObj.price || item.price,
-              stock: vidObj.stocks || vidObj.stock || item.stock,
-              effectiveTax: vidObj.effectiveTax || item.effectiveTax || null,
-            };
-          });
+          const backendItems: CartItem[] = rawItems
+            .map((item: any) => {
+              const vid = item.variantId;
+              const vidObj = (vid && typeof vid === 'object' ? vid : {}) as any;
+              return {
+                variantId: extractVariantId(vid),
+                quantity: item.quantity ?? 1,
+                title: vidObj.title || item.title,
+                image: vidObj.coverImage?.url || vidObj.image || item.image,
+                price: vidObj.price || item.price,
+                mrp: vidObj.mrp || item.mrp || vidObj.price || item.price,
+                stock: vidObj.stocks ?? vidObj.stock ?? item.stock,
+                isActive: vidObj.isActive !== false && vidObj.productId?.isPublished !== false,
+                effectiveTax: vidObj.effectiveTax || item.effectiveTax || null,
+              };
+            });
           get().mergeCart(backendItems);
           set({ isLoading: false });
         } catch (error) {
