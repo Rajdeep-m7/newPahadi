@@ -6,11 +6,9 @@ import React from 'react'
 const page = () => {
   return (
     <div>
-        <Header />
         <main className='main-shell'>
             <CartPage />
         </main>
-        <Footer />
     </div>
   )
 }

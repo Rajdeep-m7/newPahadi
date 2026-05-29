@@ -92,8 +92,9 @@ export function useCartSync() {
         syncFromBackend();
       } else {
         // Last ditch sync when leaving if we have unsaved changes
-        if (useCustomerStore.getState().isAuthenticated && useCartStore.getState().isDirty) {
-          sendBeaconWithAuth(`${BASE_URL}/cart/sync`, buildPayload(items));
+        const currentState = useCartStore.getState();
+        if (useCustomerStore.getState().isAuthenticated && currentState.isDirty) {
+          sendBeaconWithAuth(`${BASE_URL}/cart/sync`, buildPayload(currentState.items));
         }
       }
     };
@@ -105,7 +106,7 @@ export function useCartSync() {
       window.removeEventListener('focus', syncFromBackend);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [items, fetchCart]);
+  }, [fetchCart]); // Removed items dependency
 
   // --- Layer 4: Initial Mount ---
   useEffect(() => {

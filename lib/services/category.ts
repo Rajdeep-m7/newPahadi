@@ -9,6 +9,7 @@ export interface Category {
   imagePublicId: string;
   parentCategoryId: string | null;
   productCount?: number;
+  children?: Category[];
   createdAt: string;
   updatedAt: string;
 }
@@ -24,10 +25,13 @@ export const getRootCategories = cache(async function getRootCategories(): Promi
 
     const rawData = response.data.data || [];
 
-    return rawData.map((cat: any) => ({
+    const mapCategory = (cat: any): Category => ({
       ...cat,
       id: cat._id,
-    }));
+      children: cat.children ? cat.children.map(mapCategory) : undefined
+    });
+
+    return rawData.map(mapCategory);
   } catch (error) {
     console.error("Error fetching root categories:", error);
     return [];

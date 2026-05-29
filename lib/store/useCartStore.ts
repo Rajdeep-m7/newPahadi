@@ -62,14 +62,22 @@ export const useCartStore = create<CartState>()(
         const variantIdStr = extractVariantId(item.variantId as string | Record<string, unknown>);
         const normalized = { ...item, variantId: variantIdStr };
 
+        if ((item.stock ?? 0) <= 0) {
+          return; // Handled by UI toast
+        }
+
         const items = get().items;
         const existingItem = items.find(i => extractVariantId(i.variantId as string | Record<string, unknown>) === variantIdStr);
         
         let newItems;
         if (existingItem) {
+          const newQuantity = existingItem.quantity + normalized.quantity;
+          // Cap at stock if available
+          const finalQuantity = item.stock ? Math.min(newQuantity, item.stock) : newQuantity;
+
           newItems = items.map(i =>
             extractVariantId(i.variantId as string | Record<string, unknown>) === variantIdStr
-              ? { ...i, quantity: i.quantity + normalized.quantity }
+              ? { ...i, quantity: finalQuantity, stock: item.stock ?? i.stock }
               : i
           );
         } else {
@@ -89,15 +97,20 @@ export const useCartStore = create<CartState>()(
 
       updateQuantity: (variantId, quantity) => {
         const currentItems = get().items;
+        const item = currentItems.find(i => extractVariantId(i.variantId) === variantId);
+        
         let newItems;
         if (quantity <= 0) {
           newItems = currentItems.filter(i =>
             extractVariantId(i.variantId as string | Record<string, unknown>) !== variantId
           );
         } else {
+          // Cap at stock
+          const finalQuantity = item?.stock ? Math.min(quantity, item.stock) : quantity;
+          
           newItems = currentItems.map(i =>
             extractVariantId(i.variantId as string | Record<string, unknown>) === variantId
-              ? { ...i, quantity }
+              ? { ...i, quantity: finalQuantity }
               : i
           );
         }

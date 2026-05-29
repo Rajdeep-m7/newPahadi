@@ -1,7 +1,7 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import ProductPage from "@/components/ProductPage";
-import { getProductBySlug, getVariantBySlug } from "@/lib/services/product";
+import { getProductBySlug, getVariantBySlug, getSimilarProducts } from "@/lib/services/product";
 
 const page = async ({
   params,
@@ -14,13 +14,14 @@ const page = async ({
     getVariantBySlug(slug),
   ]);
 
+  const productId = variant?.currentVariant?.productId?._id || product?.id;
+  const similarProducts = productId ? await getSimilarProducts(productId) : [];
+
   return (
     <div>
-      <Header />
       <main className="main-shell">
-        <ProductPage product={product} variant={variant} />
+        <ProductPage product={product} variant={variant} similarProducts={similarProducts} />
       </main>
-      <Footer />
     </div>
   );
 };

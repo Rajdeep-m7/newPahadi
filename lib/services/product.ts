@@ -111,7 +111,7 @@ export function mapProduct(prod: any): Product {
     mrp,
     discount,
     rating: prod.rating || 0,
-    reviews: prod.reviews || 0,
+    reviews: prod.numReviews || prod.reviews || 0,
     isNew: prod.isNew || false,
     slug: prod.default_slug || prod.slug,
     variantId: prod.defaultVariantId || prod.variantId,
@@ -169,6 +169,17 @@ export const getVariantBySlug = cache(async function getVariantBySlug(slug: stri
     return null;
   }
 });
+
+export async function getSimilarProducts(productId: string): Promise<Product[]> {
+  try {
+    const response = await shopApi.get(`/products/${productId}/similar`);
+    const data = response.data.data || [];
+    return data.map((prod: any) => mapProduct(prod));
+  } catch (error) {
+    console.error(`Error fetching similar products for ${productId}:`, error);
+    return [];
+  }
+}
 
 export interface ProductsByCategoryResponse {
   products: Product[];
@@ -241,9 +252,20 @@ export async function getProductsByCategorySlug(
     maxPrice?: number;
     subcategoryId?: string;
     attributes?: Record<string, string>;
+    search?: string;
   } = {}
 ): Promise<ProductsByCategoryResponse> {
-  const { page = 1, limit = 12, sortBy = "newest", brandId, minPrice, maxPrice, subcategoryId, attributes } = options;
+  const { 
+    page = 1, 
+    limit = 12, 
+    sortBy = "newest", 
+    brandId, 
+    minPrice, 
+    maxPrice, 
+    subcategoryId, 
+    attributes,
+    search
+  } = options;
 
   try {
     const params: Record<string, any> = { page, limit, sortBy };
@@ -251,6 +273,7 @@ export async function getProductsByCategorySlug(
     if (minPrice) params.minPrice = minPrice;
     if (maxPrice) params.maxPrice = maxPrice;
     if (subcategoryId) params.subcategoryId = subcategoryId;
+    if (search) params.search = search;
     if (attributes && Object.keys(attributes).length > 0) {
       // Backend expects JSON string like: attributes={"Color":"black"}
       params.attributes = JSON.stringify(attributes);

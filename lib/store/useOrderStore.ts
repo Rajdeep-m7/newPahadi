@@ -6,6 +6,7 @@ import { shopApi } from '@/lib/fetchers';
 interface OrderItem {
   variantId: string;
   snapshot: {
+    productId: string;
     title: string;
     coverImage: string;
     sku: string;

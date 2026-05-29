@@ -12,7 +12,8 @@
   max-width: 1536px;
   margin-inline: auto;
   padding-inline: 12px;
-  padding-block: 24px;
+  padding-top: 12px;
+  padding-bottom: 24px;
 }
 
 @media (min-width: 640px) {
@@ -22,7 +23,8 @@
   }
 
   .main-shell {
-    padding-block: 32px;
+    padding-top: 16px;
+    padding-bottom: 32px;
   }
 }
 
@@ -33,7 +35,8 @@
   }
 
   .main-shell {
-    padding-block: 40px;
+    padding-top: 20px;
+    padding-bottom: 40px;
   }
 }
 
@@ -64,4 +67,14 @@
 
 .hero-slider .swiper-pagination-bullet-active {
   background: #f59e0b;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

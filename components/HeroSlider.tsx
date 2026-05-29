@@ -18,6 +18,7 @@ import mobile3 from "../public/mobile slide3.avif";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
+import Link from "next/link";
 
 const slides = [
   {
@@ -54,6 +55,8 @@ const HeroSlider = () => {
         effect="fade"
         modules={[Autoplay, Pagination, EffectFade]}
         slidesPerView={1}
+        preventClicks={false}
+        preventClicksPropagation={false}
         loop={true}
         speed={1400}
         autoplay={{
@@ -65,43 +68,42 @@ const HeroSlider = () => {
         }}
         className="hero-slider"
       >
-        {slides.map((slide) => (
+        {slides.map((slide, index) => (
           <SwiperSlide key={slide.id}>
             <div className="relative h-87.5 md:h-130 w-full overflow-hidden rounded-3xl">
-              
-              {/* Desktop Image */}
-              <Image
-                src={slide.desktop}
-                alt={`slide-${slide.id}`}
-                fill
-                priority
-                className="hidden md:block object-cover"
-              />
-
-              {/* Mobile Image */}
-              <Image
-                src={slide.mobile}
-                alt={`slide-${slide.id}`}
-                fill
-                priority
-                className="block md:hidden object-cover"
-              />
-
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/30" />
-
-              {/* Content */}
-              <div
-                className="
-                  absolute inset-0
-                  flex
-                  items-end justify-center
-                  md:items-center md:justify-end
-                  p-6 md:p-16
-                "
+              <Link
+                href="/category/all-jewellery"
+                className="relative block w-full h-full"
               >
-                {/* Add your text/buttons here */}
-              </div>
+                <Image
+                  src={slide.desktop}
+                  alt={`slide-${slide.id}`}
+                  fill
+                  priority={index === 0}
+                  className="hidden md:block object-cover"
+                />
+
+                <Image
+                  src={slide.mobile}
+                  alt={`slide-${slide.id}`}
+                  fill
+                  priority={index === 0}
+                  className="block md:hidden object-cover"
+                />
+
+                <div className="absolute inset-0 bg-black/30 pointer-events-none" />
+                <div
+                  className="
+                    absolute inset-0
+                    flex
+                    items-end justify-center
+                    md:items-center md:justify-end
+                    p-6 md:p-16
+                  "
+                >
+                  {/* Text or buttons inside the link area */}
+                </div>
+              </Link>
             </div>
           </SwiperSlide>
         ))}

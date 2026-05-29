@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { useCartStore } from "@/lib/store/useCartStore";
 
@@ -37,8 +38,20 @@ type HeaderClientProps = {
 };
 
 const HeaderClient = ({ categories }: HeaderClientProps) => {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/category/all-jewellery?search=${encodeURIComponent(searchQuery.trim())}`);
+      setShowSearch(false);
+      setSearchQuery("");
+    }
+  };
 
   const customer = useCustomerStore((state) => state.customer);
 
@@ -51,11 +64,9 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
     ...categories,
   ];
 
-  const wishlistItems = useWishlistStore((state) => state._items || []);
-  const cartItems = useCartStore((state) => state.items || []);
-  const totalCartQuantity = cartItems.reduce(
-    (acc, item) => acc + item.quantity,
-    0,
+  const wishlistCount = useWishlistStore((state) => state._items?.length || 0);
+  const totalCartQuantity = useCartStore((state) => 
+    state.items?.reduce((acc, item) => acc + item.quantity, 0) || 0
   );
 
   return (
@@ -84,14 +95,19 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
           </Link>
         </div>
 
-        <div className="hidden w-full max-w-xl items-center gap-3 rounded-full border border-gray-300 px-5 py-3 transition-all duration-300 focus-within:border-amber-500 lg:flex">
+        <form 
+          onSubmit={handleSearch}
+          className="hidden w-full max-w-xl items-center gap-3 rounded-full border border-gray-300 px-5 py-3 transition-all duration-300 focus-within:border-amber-500 lg:flex"
+        >
           <CiSearch className="text-2xl text-gray-500" />
           <input
             type="text"
             placeholder="Search for products..."
             className="w-full bg-transparent text-sm outline-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
+        </form>
 
         <div className="flex items-center gap-3 md:gap-5">
           <button
@@ -107,44 +123,58 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
           <Link href="/wishlist" className="relative">
             <IoIosHeartEmpty className="cursor-pointer text-2xl text-gray-700 transition-all hover:text-amber-500" />
 
-            {wishlistItems.length > 0 && (
+            {wishlistCount > 0 && (
               <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1 text-[11px] font-semibold text-white">
-                {wishlistItems.length}
+                {wishlistCount}
               </span>
             )}
           </Link>
 
-          <div className="group relative">
-            <CiUser className="cursor-pointer text-2xl text-gray-700 transition-all duration-300 group-hover:text-amber-500" />
-            <div className="invisible absolute right-0 top-10 z-50 w-52 translate-y-2 rounded-xl border border-gray-100 bg-white opacity-0 shadow-lg transition-all duration-300 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+          <div className="relative group">
+            <button 
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="flex items-center justify-center p-1 rounded-full transition-colors outline-none"
+            >
+              <CiUser className={`cursor-pointer text-2xl transition-all duration-300 ${userMenuOpen ? "text-amber-500" : "text-gray-700 group-hover:text-amber-500"}`} />
+            </button>
+            
+            <div className={`absolute right-0 top-12 z-50 w-52 rounded-xl border border-gray-100 bg-white shadow-2xl transition-all duration-300 ${
+              userMenuOpen 
+                ? "visible translate-y-0 opacity-100" 
+                : "invisible translate-y-2 opacity-0 lg:group-hover:visible lg:group-hover:translate-y-0 lg:group-hover:opacity-100"
+            }`}>
               <div className="flex flex-col gap-2 p-3">
                 {isAuthenticated ? (
                   <>
-                    <div className="border-b pb-2">
-                      <p className="font-medium text-gray-900">
-                        {customer?.name}
+                    <div className="border-b border-gray-100 pb-2 px-1">
+                      <p className="font-bold text-gray-900 truncate">
+                        {customer?.name || "Customer"}
                       </p>
-
-                      <p className="text-sm text-gray-500">{customer?.email}</p>
+                      <p className="text-[11px] text-gray-500 truncate font-medium">{customer?.email || customer?.phone}</p>
                     </div>
 
                     <Link
-                      href="/profile"
-                      className="rounded-lg px-3 py-2 transition-all hover:bg-gray-100"
+                      href="/account"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="rounded-lg px-3 py-2 text-sm font-bold text-gray-700 transition-all hover:bg-amber-50 hover:text-amber-500"
                     >
-                      My Profile
+                      My Account
                     </Link>
 
                     <Link
-                      href="/orders"
-                      className="rounded-lg px-3 py-2 transition-all hover:bg-gray-100"
+                      href="/account/orders"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="rounded-lg px-3 py-2 text-sm font-bold text-gray-700 transition-all hover:bg-amber-50 hover:text-amber-500"
                     >
                       My Orders
                     </Link>
 
                     <button
-                      onClick={logout}
-                      className="rounded-lg px-3 py-2 text-left text-red-500 transition-all hover:bg-red-50"
+                      onClick={() => {
+                        logout();
+                        setUserMenuOpen(false);
+                      }}
+                      className="rounded-lg px-3 py-2 text-left text-sm font-bold text-red-500 transition-all hover:bg-red-50"
                     >
                       Logout
                     </button>
@@ -152,7 +182,8 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
                 ) : (
                   <Link
                     href="/login"
-                    className="w-full rounded-lg bg-amber-500 px-3 py-2 text-center text-white transition-all hover:bg-amber-600"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="w-full rounded-lg bg-amber-500 px-3 py-2.5 text-center text-xs font-bold uppercase tracking-widest text-white transition-all hover:bg-[#222222]"
                   >
                     Login / Signup
                   </Link>
@@ -160,6 +191,13 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
               </div>
             </div>
           </div>
+
+          {userMenuOpen && (
+            <div 
+              className="fixed inset-0 z-40 bg-black/5 backdrop-blur-[1px] lg:hidden" 
+              onClick={() => setUserMenuOpen(false)}
+            />
+          )}
 
           <Link href="/cart" className="relative">
             <IoCartOutline className="cursor-pointer text-2xl text-gray-700 transition-all hover:text-amber-500" />
@@ -174,15 +212,20 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
 
       {showSearch && (
         <div className="page-shell pb-4 lg:hidden">
-          <div className="flex items-center gap-3 rounded-full border border-gray-300 px-5 py-3 transition-all duration-300 focus-within:border-amber-500">
+          <form 
+            onSubmit={handleSearch}
+            className="flex items-center gap-3 rounded-full border border-gray-300 px-5 py-3 transition-all duration-300 focus-within:border-amber-500"
+          >
             <CiSearch className="text-2xl text-gray-500" />
             <input
               type="text"
               placeholder="Search for products..."
               className="w-full bg-transparent text-sm outline-none"
               autoFocus
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </div>
+          </form>
         </div>
       )}
 
