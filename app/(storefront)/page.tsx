@@ -5,12 +5,14 @@ import ProductSection from "@/components/ProductSection";
 import Section1 from "@/components/Section1";
 import VideoSlider from "@/components/VideoSlider";
 import StaticBanner from "@/components/StaticBanner";
+import WelcomePopup from "@/components/WelcomePopup";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 function page() {
   return (
     <div>
+      <WelcomePopup />
       <div className="main-shell pt-3! pb-1!">
         <HeroSlider />
       </div>

@@ -96,3 +96,29 @@ export interface RazorpayInstance {
 export interface RazorpayWindow extends Window {
   Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
 }
+
+export interface Banner {
+  _id: string;
+  title: string;
+  desktopImage: { url: string; publicId: string };
+  mobileImage: { url: string; publicId: string };
+  link?: string;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface VideoContent {
+  _id: string;
+  title: string;
+  video: { url: string; publicId: string };
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface PopupContent {
+  _id: string;
+  title: string;
+  image: { url: string; publicId: string };
+  link?: string;
+  isActive: boolean;
+}

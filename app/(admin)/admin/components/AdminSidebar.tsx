@@ -39,6 +39,7 @@ const mainMenu: NavItem[] = [
   { label: 'Categories', href: '/admin/categories', icon: <Grid3X3 size={20} /> },
   { label: 'Brand', href: '/admin/brands', icon: <Building2 size={20} /> },
   { label: 'Warehouses', href: '/admin/warehouses', icon: <Warehouse size={20} /> },
+  { label: 'Storefront', href: '/admin/storefront', icon: <LayoutDashboard size={20} /> },
 ];
 
 const productMenu: NavItem[] = [

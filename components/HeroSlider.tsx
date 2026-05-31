@@ -1,54 +1,30 @@
 "use client";
 
 import Image from "next/image";
-
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectFade, Pagination } from "swiper/modules";
-
-import slider1 from "../public/slider-for-pc.avif";
-import slider2 from "../public/slider-for-pc-1.avif";
-import slider3 from "../public/slider-for-pc-2.avif";
-import slider4 from "../public/slider-for-pc-3.avif";
-import slider5 from "../public/slider-for-pc-4.avif";
-
-import mobile1 from "../public/mobile slide1.avif";
-import mobile2 from "../public/mobile slide2.avif";
-import mobile3 from "../public/mobile slide3.avif";
+import { useStorefrontData } from "@/lib/hooks/useStorefront";
+import Link from "next/link";
+import { Skeleton } from "./ui/Skeleton";
 
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
-import Link from "next/link";
-
-const slides = [
-  {
-    id: 1,
-    desktop: slider1,
-    mobile: mobile1,
-  },
-  {
-    id: 2,
-    desktop: slider2,
-    mobile: mobile2,
-  },
-  {
-    id: 3,
-    desktop: slider3,
-    mobile: mobile3,
-  },
-  {
-    id: 4,
-    desktop: slider4,
-    mobile: mobile1,
-  },
-  {
-    id: 5,
-    desktop: slider5,
-    mobile: mobile2,
-  },
-];
 
 const HeroSlider = () => {
+  const { data, isLoading } = useStorefrontData();
+  const banners = data?.banners || [];
+
+  if (isLoading) {
+    return (
+      <div className="w-full pb-1">
+        <Skeleton className="h-87.5 md:h-130 w-full rounded-3xl" />
+      </div>
+    );
+  }
+
+  if (banners.length === 0) return null;
+
   return (
     <div className="w-full pb-1">
       <Swiper
@@ -57,7 +33,7 @@ const HeroSlider = () => {
         slidesPerView={1}
         preventClicks={false}
         preventClicksPropagation={false}
-        loop={true}
+        loop={banners.length > 1}
         speed={1400}
         autoplay={{
           delay: 3500,
@@ -68,41 +44,32 @@ const HeroSlider = () => {
         }}
         className="hero-slider"
       >
-        {slides.map((slide, index) => (
-          <SwiperSlide key={slide.id}>
+        {banners.map((slide, index) => (
+          <SwiperSlide key={slide._id}>
             <div className="relative h-87.5 md:h-130 w-full overflow-hidden rounded-3xl">
               <Link
-                href="/category/all-jewellery"
+                href={slide.link || "/category/all-jewellery"}
                 className="relative block w-full h-full"
               >
                 <Image
-                  src={slide.desktop}
-                  alt={`slide-${slide.id}`}
+                  src={slide.desktopImage.url}
+                  alt={slide.title}
                   fill
                   priority={index === 0}
                   className="hidden md:block object-cover"
+                  sizes="100vw"
                 />
 
                 <Image
-                  src={slide.mobile}
-                  alt={`slide-${slide.id}`}
+                  src={slide.mobileImage.url}
+                  alt={slide.title}
                   fill
                   priority={index === 0}
                   className="block md:hidden object-cover"
+                  sizes="100vw"
                 />
 
                 <div className="absolute inset-0 bg-black/30 pointer-events-none" />
-                <div
-                  className="
-                    absolute inset-0
-                    flex
-                    items-end justify-center
-                    md:items-center md:justify-end
-                    p-6 md:p-16
-                  "
-                >
-                  {/* Text or buttons inside the link area */}
-                </div>
               </Link>
             </div>
           </SwiperSlide>

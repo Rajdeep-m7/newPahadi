@@ -128,6 +128,14 @@ export const shopApi = axios.create({
   withCredentials: true,
 });
 
+/**
+ * Public API Instance
+ * Used for all public storefront actions (no auth).
+ */
+export const api = axios.create({
+  baseURL,
+});
+
 shopApi.interceptors.request.use((config) => {
   const token = useCustomerStore?.getState?.()?.token;
   

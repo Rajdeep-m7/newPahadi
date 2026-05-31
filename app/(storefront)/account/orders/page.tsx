@@ -100,7 +100,7 @@ export default function OrdersPage() {
                   <div className="flex items-center gap-6">
                     <div>
                       <p className="text-[9px] font-bold text-[#BBBBBB] uppercase tracking-widest mb-0.5">Order ID</p>
-                      <p className="text-sm font-bold text-[#222222]">{order._id.slice(-8).toUpperCase()}</p>
+                      <p className="text-sm font-bold text-[#222222]">{order.orderId}</p>
                     </div>
                     <div className="hidden sm:block">
                       <p className="text-[9px] font-bold text-[#BBBBBB] uppercase tracking-widest mb-0.5">Order Date</p>
@@ -141,6 +141,16 @@ export default function OrdersPage() {
                           {firstItem?.snapshot.title || "Product Name"}
                           {itemsCount > 1 && <span className="text-[#666666] font-medium ml-2">and {itemsCount - 1} more...</span>}
                         </h3>
+                        {/* Variant Attributes */}
+                        {(firstItem?.attributes || firstItem?.snapshot?.attributes) && (
+                          <div className="flex flex-wrap gap-x-3 gap-y-1 mb-2">
+                            {Object.entries(firstItem.attributes || firstItem.snapshot.attributes).map(([k, v]: any) => (
+                              <p key={k} className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded">
+                                {k}: {v}
+                              </p>
+                            ))}
+                          </div>
+                        )}
                         <p className="text-sm font-medium text-[#666666] mb-3">Items: {itemsCount}</p>
                         <div className="flex flex-wrap gap-3">
                           <button 

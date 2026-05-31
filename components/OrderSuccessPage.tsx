@@ -24,11 +24,11 @@ const SuccessContent = () => {
         Order Placed Successfully!
       </h1>
       <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto font-medium">
-        Thank you for shopping with Pahadi Collections. We've received your order and are preparing it for shipment.
+        Thank you for shopping with Pahadi Collections. We&apos;ve received your order and are preparing it for shipment.
       </p>
 
       {orderId && (
-        <div className="bg-white border border-gray-100 rounded-md p-5 mb-8 shadow-sm inline-block min-w-[280px]">
+        <div className="bg-white border border-gray-100 rounded-md p-5 mb-8 shadow-sm inline-block min-w-70">
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Order Number</p>
           <p className="text-lg font-bold text-gray-900 tracking-tight">#{orderId}</p>
           <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-center gap-2 text-green-600">

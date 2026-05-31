@@ -120,7 +120,7 @@ const OrderDetailsPage = () => {
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Qty: {item.quantity}</p>
                         {(item.attributes || item.snapshot?.attributes) && Object.entries(item.attributes || item.snapshot?.attributes).map(([k, v]: any) => (
-                          <p key={k} className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                          <p key={k} className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded">
                             {k}: {v}
                           </p>
                         ))}

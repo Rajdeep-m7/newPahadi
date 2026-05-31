@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   FiCreditCard,
@@ -52,6 +52,7 @@ const CheckoutPage = () => {
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const hasCompletedOrder = useRef(false);
 
   const [couponCode, setCouponCode] = useState("");
   const [isApplying, setIsApplying] = useState(false);
@@ -82,7 +83,7 @@ const CheckoutPage = () => {
       return;
     }
 
-    if (cartItems.length === 0) {
+    if (cartItems.length === 0 && !hasCompletedOrder.current) {
       router.push("/cart");
       return;
     }
@@ -224,6 +225,7 @@ const CheckoutPage = () => {
 
             if (verifyRes.data.success) {
               toast.success("Payment successful!");
+              hasCompletedOrder.current = true;
               clearCart();
               router.push(`/checkout/success?orderId=${order.orderId}`);
             } else {
