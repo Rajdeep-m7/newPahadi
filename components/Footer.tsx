@@ -35,7 +35,7 @@ const Footer = () => {
             <Image height={40} width={120} src={logoPc} alt="Pahadi Collections" className="h-10 w-auto" />
 
             <p className="mt-6 text-lg font-medium text-gray-800">
-              We Accepted
+              We Accept
             </p>
 
             <div className="flex items-center gap-3 mt-4">
@@ -141,32 +141,32 @@ const Footer = () => {
               <div className="flex items-start gap-3">
                 <FaPhoneAlt className="mt-1 text-blue-500" />
 
-                <p>+91 98765 43210</p>
+                <p>+91 9749388527</p>
               </div>
 
               <div className="flex items-start gap-3">
                 <FaWhatsapp className="mt-1 text-green-500" />
 
-                <p>+91 98765 43210</p>
+                <p>+91 9749388527</p>
               </div>
 
               <div className="flex items-start gap-3">
                 <MdEmail className="mt-1 text-red-500 text-xl" />
 
-                <p>pahadicollections@gmail.com</p>
+                <p>pahadicollections124@gmail.com</p>
               </div>
 
               <div className="flex items-start gap-3">
                 <FaMapMarkerAlt className="mt-1 text-blue-500" />
 
                 <p>
-                  Pahadi Collections,
+                  Shanti Nagar Near Jhali Basti TCP,
                   <br />
-                  Hill Cart Road,
+                  Near Khaprail Bazar,
                   <br />
                   Siliguri, West Bengal,
                   <br />
-                  India - 734001
+                  India - 734009
                 </p>
               </div>
             </div>

@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "RupeeSystem";
+  src: local("Inter"), local("Segoe UI"), local("Roboto"), local("Arial"), local("sans-serif");
+  unicode-range: U+20B9;
+}
+
+@theme {
+  --font-futura: "RupeeSystem", var(--font-futura-raw), system-ui, sans-serif;
+}
+
 .page-shell {
   width: 100%;
   max-width: 1280px;

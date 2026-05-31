@@ -95,14 +95,14 @@ const ProductSection = async () => {
       {activeSections.length > 0 ? (
         activeSections.map((section: any) => (
           <div key={section.id} className="space-y-6">
-            <div className="flex justify-between items-end">
+            <div className="flex justify-between items-center">
               <div>
                 <p className="text-3xl font-bold">{section.name}</p>
                 <div className="h-1 w-20 bg-brand mt-2 rounded-full" />
               </div>
               <Link 
                 href={`/category/${section.slug}`}
-                className="text-brand font-bold text-sm hover:underline"
+                className="text-brand font-bold text-sm hover:underline mb-2"
               >
                 View All
               </Link>

@@ -625,7 +625,7 @@ export default function CategoriesPage() {
                       type="text" 
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Smart Electronics"
+                      placeholder="e.g. Traditional Jewellery"
                       className={`w-full bg-background border rounded-xl py-2.5 px-4 text-sm focus:outline-none transition-all ${
                         fieldErrors.name ? 'border-red-500 focus:border-red-500' : 'border-border focus:border-brand'
                       }`}

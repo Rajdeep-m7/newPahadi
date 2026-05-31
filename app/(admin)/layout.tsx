@@ -23,7 +23,7 @@ const futura = localFont({
     { path: "../fonts/FuturaPTHeavy.otf", weight: "900", style: "normal" },
     { path: "../fonts/FuturaPTHeavyOblique.otf", weight: "900", style: "italic" },
   ],
-  variable: "--font-futura",
+  variable: "--font-futura-raw",
   display: "swap",
 });
 
@@ -39,7 +39,7 @@ export default function RootAdminLayout({
 }>) {
   return (
     <html lang="en" className={`${futura.variable} antialiased`}>
-      <body className="min-h-full bg-[#f7f8fa] text-[#222222] font-[--font-futura] font-medium">
+      <body className="min-h-full bg-[#f7f8fa] text-[#222222] font-futura font-medium">
         <Toaster position="top-right" richColors closeButton />
         <ProgressProvider>
           <QueryProvider>

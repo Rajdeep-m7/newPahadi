@@ -25,7 +25,7 @@ const futura = localFont({
     { path: "../fonts/FuturaPTHeavy.otf", weight: "900", style: "normal" },
     { path: "../fonts/FuturaPTHeavyOblique.otf", weight: "900", style: "italic" },
   ],
-  variable: "--font-futura",
+  variable: "--font-futura-raw",
   display: "swap",
 });
 
@@ -47,7 +47,7 @@ export default function StorefrontLayout({
       lang="en"
       className={`${futura.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-[--font-futura]">
+      <body className="min-h-full flex flex-col font-futura">
         <Toaster position="top-right" richColors closeButton />
         <ProgressProvider>
           <QueryProvider>

@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import logopc from "@/public/logo pc.svg";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -128,7 +130,11 @@ export default function AdminSidebar() {
     >
       {/* Logo & Toggle */}
       <div className={`px-6 py-5 flex items-center justify-between ${isCollapsed ? 'px-4 justify-center' : ''}`}>
-        {!isCollapsed && <h1 className="text-xl font-semibold text-brand-dark tracking-tight">Pahadi Collections</h1>}
+        {!isCollapsed && (
+          <Link href="/admin" className="flex items-center">
+            <Image src={logopc} alt="Pahadi Collections" width={140} height={40} className="h-8 w-auto" priority />
+          </Link>
+        )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="p-1.5 rounded-lg hover:bg-background text-muted transition-colors"

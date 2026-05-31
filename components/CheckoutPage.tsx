@@ -10,6 +10,8 @@ import {
   FiTruck,
   FiPlus,
   FiCheckCircle,
+  FiTag,
+  FiX,
 } from "react-icons/fi";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { useAddressStore } from "@/lib/store/useAddressStore";
@@ -17,6 +19,7 @@ import { useCustomerStore } from "@/lib/store/useCustomerStore";
 import AddressForm from "@/components/AddressForm";
 import { shopApi } from "@/lib/fetchers";
 import { toast } from "sonner";
+import { shopCouponApi, Coupon } from "@/lib/api/shopCoupons";
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -42,13 +45,36 @@ const formatCurrency = (amount: number) => {
 
 const CheckoutPage = () => {
   const router = useRouter();
-  const { items: cartItems, clearCart, appliedCoupon } = useCartStore();
+  const { items: cartItems, clearCart, appliedCoupon, setAppliedCoupon, removeCoupon } = useCartStore();
   const { customer, isAuthenticated } = useCustomerStore();
   const { addresses, fetchAddresses, createAddress } = useAddressStore();
 
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const [couponCode, setCouponCode] = useState("");
+  const [isApplying, setIsApplying] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
+  const [showCoupons, setShowCoupons] = useState(false);
+  const [isLoadingCoupons, setIsLoadingCoupons] = useState(false);
+
+  const subtotal = cartItems.reduce(
+    (acc, item) => acc + (item.isActive === false ? 0 : (item.price || 0) * item.quantity),
+    0
+  );
+
+  const validCartItems = cartItems.filter((item) => item.isActive !== false);
+
+  const discountAmount = appliedCoupon?.calculatedDiscount || 0;
+  
+  const totalTax = validCartItems.reduce((acc, item) => {
+    if (!item.effectiveTax || !item.price) return acc;
+    const itemTax = item.effectiveTax.reduce((tAcc, slab) => tAcc + (item.price! * item.quantity * slab.slab) / 100, 0);
+    return acc + itemTax;
+  }, 0);
+
+  const totalAmount = subtotal - discountAmount;
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -62,7 +88,53 @@ const CheckoutPage = () => {
     }
 
     fetchAddresses();
+    fetchAvailableCoupons();
   }, [isAuthenticated, cartItems.length, router, fetchAddresses]);
+
+  const fetchAvailableCoupons = async () => {
+    setIsLoadingCoupons(true);
+    try {
+      // Fetch coupons with a high limit to show both applicable and non-applicable ones
+      const coupons = await shopCouponApi.getAvailableCoupons(1000000);
+      setAvailableCoupons(coupons);
+    } catch (error) {
+      console.error("Failed to fetch coupons", error);
+    } finally {
+      setIsLoadingCoupons(false);
+    }
+  };
+
+  const handleApplyCoupon = async (codeToApply?: string) => {
+    const code = codeToApply || couponCode;
+    if (!code) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
+
+    setIsApplying(true);
+    try {
+      const res = await shopCouponApi.validateCoupon(code, subtotal);
+      if (res.valid && res.coupon) {
+        setAppliedCoupon({
+          code: res.coupon.code,
+          type: res.coupon.type,
+          value: res.coupon.value,
+          maxDiscount: res.coupon.maxDiscount,
+          minOrderValue: res.coupon.minOrderValue,
+          calculatedDiscount: res.calculatedDiscount,
+        });
+        toast.success("Coupon applied successfully!");
+        setCouponCode("");
+        setShowCoupons(false);
+      } else {
+        toast.error(res.error || "Invalid coupon code");
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to apply coupon");
+    } finally {
+      setIsApplying(false);
+    }
+  };
 
   // Set default address if none selected and addresses load
   useEffect(() => {
@@ -119,8 +191,8 @@ const CheckoutPage = () => {
       const order = orderRes.data.data;
 
       // 2. Initiate Payment
-      const initRes = await shopApi.post("/transactions/initiate", {
-        orderId: order._id,
+      const initRes = await shopApi.post("/payments/initiate", {
+        orderId: order.orderId,
         method: "razorpay",
       });
       const transaction = initRes.data.data;
@@ -140,11 +212,11 @@ const CheckoutPage = () => {
         currency: transaction.currency,
         name: "Pahadi Collections",
         description: `Payment for Order #${order.orderId}`,
-        order_id: transaction.razorpayOrderId,
+        order_id: transaction.gatewayOrderId,
         handler: async function (response: any) {
           try {
             // 5. Verify Payment
-            const verifyRes = await shopApi.post("/transactions/verify", {
+            const verifyRes = await shopApi.post("/payments/verify", {
               razorpayPaymentId: response.razorpay_payment_id,
               razorpayOrderId: response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature,
@@ -153,7 +225,7 @@ const CheckoutPage = () => {
             if (verifyRes.data.success) {
               toast.success("Payment successful!");
               clearCart();
-              router.push("/account/orders");
+              router.push(`/checkout/success?orderId=${order.orderId}`);
             } else {
               toast.error("Payment verification failed");
               router.push(`/account/orders`);
@@ -193,28 +265,6 @@ const CheckoutPage = () => {
     }
   };
 
-  // Calculations
-  const subtotal = cartItems.reduce(
-    (acc, item) => acc + (item.isActive === false ? 0 : (item.price || 0) * item.quantity),
-    0
-  );
-
-  const discountAmount = appliedCoupon?.calculatedDiscount || 0;
-
-  const totalTax = cartItems.reduce((acc, item) => {
-    if (item.isActive === false) return acc;
-    if (!item.effectiveTax || item.effectiveTax.length === 0) return acc;
-    const itemPrice = item.price || 0;
-    const itemTax = item.effectiveTax.reduce((tAcc, slab) => {
-      return tAcc + itemPrice * (slab.slab / 100);
-    }, 0);
-    return acc + itemTax * item.quantity;
-  }, 0);
-
-  const totalAmount = subtotal - discountAmount + totalTax;
-
-  const validCartItems = cartItems.filter((item) => item.isActive !== false);
-
   if (!isAuthenticated || cartItems.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f7f7f7]">
@@ -245,7 +295,7 @@ const CheckoutPage = () => {
                   <FiMapPin className="text-amber-600" size={20} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 text-sm md:text-base">Delivery Address</h2>
+                  <h2 className=" font-semibold text-gray-900 text-sm md:text-base">Delivery Address</h2>
                   <p className="text-xs text-gray-500">Select where to ship your order</p>
                 </div>
               </div>
@@ -308,7 +358,7 @@ const CheckoutPage = () => {
                 <FiCreditCard className="text-amber-600" size={20} />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 text-sm md:text-base">Payment Method</h2>
+                <h2 className=" font-semibold text-gray-900 text-sm md:text-base">Payment Method</h2>
                 <p className="text-xs text-gray-500">Secure online payment via Razorpay</p>
               </div>
             </div>
@@ -335,7 +385,7 @@ const CheckoutPage = () => {
             </h2>
 
             {/* PRODUCT LIST */}
-            <div className="max-h-[300px] overflow-y-auto no-scrollbar space-y-4 mb-8">
+            <div className="max-h-75 overflow-y-auto no-scrollbar space-y-4 mb-8">
               {validCartItems.map((item, idx) => (
                 <div key={idx} className="flex gap-4">
                   <div className="relative overflow-hidden rounded-xl border border-gray-100 bg-gray-50 shrink-0 w-20 h-20">
@@ -363,24 +413,126 @@ const CheckoutPage = () => {
 
             {/* PRICE DETAILS */}
             <div className="space-y-4 border-t border-gray-50 pt-6">
-              <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.1em]">
+              {/* Coupon Section */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Coupons</span>
+                  {!appliedCoupon && (
+                    <button 
+                      onClick={() => setShowCoupons(!showCoupons)}
+                      className="text-[10px] font-bold text-amber-600 uppercase tracking-widest hover:underline"
+                    >
+                      {showCoupons ? "Close" : "View All"}
+                    </button>
+                  )}
+                </div>
+
+                {!appliedCoupon ? (
+                  <div className="space-y-4">
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <FiTag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                        <input 
+                          type="text" 
+                          placeholder="ENTER CODE" 
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          className="w-full rounded-xl border border-gray-100 bg-gray-50 py-2.5 pl-10 pr-4 text-xs font-bold uppercase tracking-widest focus:border-amber-200 focus:outline-none focus:ring-4 focus:ring-amber-50"
+                        />
+                      </div>
+                      <button 
+                        onClick={() => handleApplyCoupon()}
+                        disabled={isApplying || !couponCode}
+                        className="rounded-xl bg-[#222222] px-6 text-[10px] font-bold uppercase tracking-widest text-white transition-all hover:bg-amber-500 disabled:opacity-50"
+                      >
+                        {isApplying ? "..." : "Apply"}
+                      </button>
+                    </div>
+
+                    {showCoupons && (
+                      <div className="rounded-2xl bg-gray-50 p-4 border border-gray-100 animate-in slide-in-from-top-2 duration-300">
+                        <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Available Coupons</h4>
+                        {isLoadingCoupons ? (
+                          <div className="py-4 text-center">
+                            <div className="h-4 w-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                          </div>
+                        ) : availableCoupons.length > 0 ? (
+                          <div className="space-y-3">
+                            {availableCoupons.map((coupon) => {
+                              const isNotApplicable = subtotal < coupon.minOrderValue;
+                              return (
+                                <div key={coupon.code} className={`flex items-center justify-between gap-3 p-3 rounded-xl border shadow-sm transition-all ${
+                                  isNotApplicable ? "bg-gray-100/50 border-gray-100 grayscale opacity-70" : "bg-white border-gray-100"
+                                }`}>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <p className={`text-xs font-bold ${isNotApplicable ? "text-gray-400" : "text-gray-900"}`}>{coupon.code}</p>
+                                      {isNotApplicable && (
+                                        <span className="text-[8px] font-bold text-red-400 uppercase tracking-tighter">Not Applicable</span>
+                                      )}
+                                    </div>
+                                    <p className={`text-[10px] font-medium ${isNotApplicable ? "text-gray-400" : "text-gray-500"}`}>
+                                      {coupon.type === 'percentage' ? `${coupon.value}% OFF` : `₹${coupon.value} OFF`}
+                                      {isNotApplicable && ` (Min: ₹${coupon.minOrderValue})`}
+                                    </p>
+                                  </div>
+                                  {!isNotApplicable && (
+                                    <button 
+                                      onClick={() => handleApplyCoupon(coupon.code)}
+                                      className="text-[10px] font-bold text-amber-600 uppercase tracking-widest hover:text-amber-700"
+                                    >
+                                      Apply
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-[10px] text-gray-400 font-medium text-center py-2">No coupons available.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl bg-green-50/50 border border-green-100 p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+                        <FiTag size={14} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-gray-900 uppercase tracking-widest">{appliedCoupon.code}</p>
+                        <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider mt-0.5">Applied Successfully</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={removeCoupon}
+                      className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <FiX size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest">
                 <span className="text-gray-400">Subtotal</span>
                 <span className="text-gray-900">{formatCurrency(subtotal)}</span>
               </div>
 
               {discountAmount > 0 && (
-                <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.1em] text-green-600">
+                <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest text-green-600">
                   <span>Coupon ({appliedCoupon?.code})</span>
                   <span>-{formatCurrency(discountAmount)}</span>
                 </div>
               )}
 
-              <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.1em]">
+              <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest">
                 <span className="text-gray-400">Shipping</span>
                 <span className="text-green-600">Free</span>
               </div>
 
-              <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.1em]">
+              <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest">
                 <span className="text-gray-400">GST (Taxes)</span>
                 <span className="text-gray-900">{formatCurrency(totalTax)}</span>
               </div>

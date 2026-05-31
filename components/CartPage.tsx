@@ -9,67 +9,12 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
 const CartPage = () => {
-  const { items: cartItems, updateQuantity, removeItem, appliedCoupon, setAppliedCoupon, removeCoupon } = useCartStore();
-  const [couponCode, setCouponCode] = useState("");
-  const [isApplying, setIsApplying] = useState(false);
-  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
-  const [showCoupons, setShowCoupons] = useState(false);
-  const [isLoadingCoupons, setIsLoadingCoupons] = useState(false);
+  const { items: cartItems, updateQuantity, removeItem, appliedCoupon, removeCoupon } = useCartStore();
 
   const subtotal = cartItems.reduce(
     (acc, item) => acc + (item.isActive === false ? 0 : (item.price || 0) * item.quantity),
     0
   );
-
-  useEffect(() => {
-    if (showCoupons && subtotal > 0) {
-      fetchAvailableCoupons();
-    }
-  }, [showCoupons, subtotal]);
-
-  const fetchAvailableCoupons = async () => {
-    setIsLoadingCoupons(true);
-    try {
-      const coupons = await shopCouponApi.getAvailableCoupons(subtotal);
-      setAvailableCoupons(coupons);
-    } catch (error) {
-      console.error("Failed to fetch coupons", error);
-    } finally {
-      setIsLoadingCoupons(false);
-    }
-  };
-
-  const handleApplyCoupon = async (codeToApply?: string) => {
-    const code = codeToApply || couponCode;
-    if (!code) {
-      toast.error("Please enter a coupon code");
-      return;
-    }
-
-    setIsApplying(true);
-    try {
-      const res = await shopCouponApi.validateCoupon(code, subtotal);
-      if (res.valid && res.coupon) {
-        setAppliedCoupon({
-          code: res.coupon.code,
-          type: res.coupon.type,
-          value: res.coupon.value,
-          maxDiscount: res.coupon.maxDiscount,
-          minOrderValue: res.coupon.minOrderValue,
-          calculatedDiscount: res.calculatedDiscount,
-        });
-        toast.success("Coupon applied successfully!");
-        setCouponCode("");
-        setShowCoupons(false);
-      } else {
-        toast.error(res.error || "Invalid coupon code");
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to apply coupon");
-    } finally {
-      setIsApplying(false);
-    }
-  };
 
   const discountAmount = appliedCoupon?.calculatedDiscount || 0;
 
@@ -86,7 +31,7 @@ const CartPage = () => {
 
   if (cartItems.length === 0) {
     return (
-      <section className="min-h-[60vh] flex flex-col items-center justify-center bg-[#fafafa] py-12 px-4">
+      <section className="min-h-[60vh] flex flex-col items-center justify-center py-12 px-4">
         <div className="text-center">
           <div className="mb-6 flex justify-center text-gray-300">
             <svg className="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -232,112 +177,11 @@ const CartPage = () => {
               Order Summary
             </h2>
 
-            {/* Coupon Section */}
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-bold text-gray-900 uppercase tracking-wider">Coupons</span>
-                {!appliedCoupon && (
-                  <button 
-                    onClick={() => setShowCoupons(!showCoupons)}
-                    className="text-[10px] font-bold text-amber-600 uppercase tracking-widest hover:underline"
-                  >
-                    {showCoupons ? "Close" : "View All"}
-                  </button>
-                )}
-              </div>
-
-              {!appliedCoupon ? (
-                <div className="space-y-4">
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <FiTag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                      <input 
-                        type="text" 
-                        placeholder="ENTER CODE" 
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                        className="w-full rounded-xl border border-gray-100 bg-gray-50 py-2.5 pl-10 pr-4 text-xs font-bold uppercase tracking-widest focus:border-amber-200 focus:outline-none focus:ring-4 focus:ring-amber-50"
-                      />
-                    </div>
-                    <button 
-                      onClick={() => handleApplyCoupon()}
-                      disabled={isApplying || !couponCode}
-                      className="rounded-xl bg-[#222222] px-6 text-[10px] font-bold uppercase tracking-widest text-white transition-all hover:bg-amber-500 disabled:opacity-50"
-                    >
-                      {isApplying ? "..." : "Apply"}
-                    </button>
-                  </div>
-
-                  {showCoupons && (
-                    <div className="rounded-2xl bg-gray-50 p-4 border border-gray-100 animate-in slide-in-from-top-2 duration-300">
-                      <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Available Coupons</h4>
-                      {isLoadingCoupons ? (
-                        <div className="py-4 text-center">
-                          <div className="h-4 w-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                        </div>
-                      ) : availableCoupons.length > 0 ? (
-                        <div className="space-y-3">
-                          {availableCoupons.map((coupon) => (
-                            <div key={coupon.code} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white border border-gray-100 shadow-sm">
-                              <div>
-                                <p className="text-xs font-bold text-gray-900">{coupon.code}</p>
-                                <p className="text-[10px] text-gray-500 font-medium">
-                                  {coupon.type === 'percentage' ? `${coupon.value}% OFF` : `₹${coupon.value} OFF`}
-                                </p>
-                              </div>
-                              <button 
-                                onClick={() => handleApplyCoupon(coupon.code)}
-                                className="text-[10px] font-bold text-amber-600 uppercase tracking-widest hover:text-amber-700"
-                              >
-                                Apply
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-[10px] text-gray-400 font-medium text-center py-2">No coupons available for this order value.</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="rounded-2xl bg-green-50/50 border border-green-100 p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
-                      <FiTag size={14} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-gray-900 uppercase tracking-widest">{appliedCoupon.code}</p>
-                      <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider mt-0.5">Applied Successfully</p>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={removeCoupon}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    <FiX size={16} />
-                  </button>
-                </div>
-              )}
-            </div>
-
             <div className="mt-6 space-y-4 pt-6 border-t border-gray-100">
               <div className="flex items-center justify-between text-sm sm:text-base font-medium text-gray-500">
                 <span>Subtotal</span>
                 <span className="text-gray-900 font-bold">₹{subtotal.toLocaleString()}</span>
               </div>
-
-              {discountAmount > 0 && (
-                <div className="flex items-center justify-between text-sm sm:text-base font-medium text-green-600">
-                  <div className="flex items-center gap-1.5">
-                    <span>Coupon Discount</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-green-100 px-1.5 py-0.5 rounded">
-                      {appliedCoupon?.code}
-                    </span>
-                  </div>
-                  <span className="font-bold">-₹{discountAmount.toLocaleString()}</span>
-                </div>
-              )}
 
               <div className="flex items-center justify-between text-sm sm:text-base font-medium text-gray-500">
                 <span>Shipping Fee</span>
@@ -356,7 +200,7 @@ const CartPage = () => {
                   </span>
                   <div className="text-right">
                     <span className="text-3xl font-bold text-gray-900 tracking-tighter">
-                      ₹{Math.round(subtotal - discountAmount + totalTax).toLocaleString()}
+                      ₹{Math.round(subtotal + totalTax).toLocaleString()}
                     </span>
                     <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mt-1 italic">
                       Final price at checkout

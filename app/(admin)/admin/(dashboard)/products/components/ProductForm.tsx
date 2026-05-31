@@ -67,10 +67,8 @@ interface FormVariant {
 }
 
 const PREDEFINED_ATTRIBUTES = [
-  { group: 'Common', keys: ['Color', 'Capacity', 'Size', 'Length', 'Pack of', 'Material'] },
-  { group: 'Performance', keys: ['Processor', 'RAM', 'Storage', 'Speed', 'RAM Type', 'Generation'] },
-  { group: 'Display & Graphics', keys: ['GPU', 'Screen Size', 'Refresh Rate', 'Resolution', 'Panel Type'] },
-  { group: 'Technical', keys: ['Interface', 'Socket Type', 'Form Factor', 'Wattage', 'Compatibility', 'Voltage'] },
+  { group: 'Common', keys: ['Color', 'Size', 'Length', 'Material', 'Weight', 'Gender'] },
+  { group: 'Jewellery Details', keys: ['Metal Type', 'Metal Purity', 'Metal Color', 'Stone Type', 'Stone Color', 'Certification', 'Occasion'] },
 ];
 
 export default function ProductForm({ product, onBack }: ProductFormProps) {
@@ -1451,7 +1449,7 @@ const handleSaveDraft = async () => {
                            <div className="flex flex-col gap-1.5">
                              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">Value</label>
                              <input 
-                               type="text" value={attr.value} placeholder="e.g. 16GB"
+                               type="text" value={attr.value} placeholder="e.g. 22KT"
                                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#44937D]/20 focus:border-[#44937D]"
                                onChange={(e) => updateSingleAttribute(index, 'value', e.target.value)}
                              />
@@ -1507,7 +1505,7 @@ const handleSaveDraft = async () => {
                       value={singleVariant.sku} 
                       readOnly={isSkuLocked}
                       onChange={(e) => setSingleVariant({...singleVariant, sku: e.target.value.toUpperCase()})} 
-                      placeholder="e.g. ELEC-LAP-001" 
+                      placeholder="e.g. JEW-RING-001" 
                       className={`w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm mb-1 focus:outline-none transition-colors ${isSkuLocked ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50 focus:ring-2 focus:ring-[#44937D]/20 focus:border-[#44937D]'} ${variantErrors.sku ? 'border-red-500' : ''}`} 
                     />
                     {variantErrors.sku && <p className="text-red-500 text-xs mt-1">{variantErrors.sku}</p>}
@@ -1672,7 +1670,7 @@ const handleSaveDraft = async () => {
                       value={currentVariant.sku} 
                       readOnly={isVariantSkuLocked}
                       onChange={(e) => setCurrentVariant({...currentVariant, sku: e.target.value.toUpperCase()})} 
-                      placeholder="SKU-XXX" 
+                      placeholder="e.g. JEW-NECK-001" 
                       className={`w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none transition-colors ${isVariantSkuLocked ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50 focus:ring-2 focus:ring-[#44937D]/20 focus:border-[#44937D]'} ${variantErrors.sku ? 'border-red-500' : ''}`} 
                     />
                     {variantErrors.sku && <p className="text-red-500 text-xs mt-1">{variantErrors.sku}</p>}

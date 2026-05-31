@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import pahadiImage from "@/public/PAHADI.jpg";
-import image1 from "@/public/1.jpg";
+import pahadiImage from "@/public/pahadiFooter.jpeg";
+import image1 from "../public/1 copy.jpg";
 import image2 from "@/public/2.jpg";
 
 const items = [
@@ -38,7 +38,7 @@ const StaticBanner = () => {
         <div className="grid grid-rows-2 gap-4">
           
           {/* TOP IMAGE */}
-          <Link href="/category/all-jewellery" className="group relative h-[280px] overflow-hidden rounded-3xl sm:h-[300px] lg:h-[252px] xl:h-[292px] block">
+          <Link href="/category/all-jewellery" className="group relative h-70 overflow-hidden rounded-3xl sm:h-75 lg:h-63 xl:h-73 block">
             <Image
               src={items[1].image}
               alt="Banner"
@@ -50,7 +50,7 @@ const StaticBanner = () => {
           </Link>
 
           {/* BOTTOM IMAGE */}
-          <Link href="/category/all-jewellery" className="group relative h-[280px] overflow-hidden rounded-3xl sm:h-[300px] lg:h-[252px] xl:h-[292px] block">
+          <Link href="/category/all-jewellery" className="group relative h-70 overflow-hidden rounded-3xl sm:h-75 lg:h-63 xl:h-73 block">
             <Image
               src={items[2].image}
               alt="Banner"

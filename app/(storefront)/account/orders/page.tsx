@@ -4,18 +4,42 @@ import { useEffect, useState } from "react";
 import { Package, ChevronRight, Calendar, Clock, Loader2, Star } from "lucide-react";
 import Link from "next/link";
 import { useOrderStore } from "@/lib/store/useOrderStore";
+import { useCartStore } from "@/lib/store/useCartStore";
+import { useRouter } from "next/navigation";
 import ReviewModal from "@/components/ReviewModal";
 import { toast } from "sonner";
 import { shopApi } from "@/lib/fetchers";
 
 export default function OrdersPage() {
+  const router = useRouter();
   const { orders, isLoading, fetchOrders } = useOrderStore();
+  const addItem = useCartStore((state) => state.addItem);
   const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string } | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  const handleBuyAgain = (order: any) => {
+    try {
+      order.items.forEach((item: any) => {
+        addItem({
+          variantId: item.variantId,
+          quantity: 1, // Default to 1 for Buy Again
+          title: item.snapshot.title,
+          image: item.snapshot.coverImage,
+          price: item.price,
+          mrp: item.price, // Fallback if mrp not in snapshot
+        });
+      });
+      toast.success("Added to cart! Redirecting...");
+      router.push("/checkout");
+    } catch (error) {
+      console.error("Buy Again failed", error);
+      toast.error("Failed to add items to cart");
+    }
+  };
 
   const handleWriteReview = async (productId: string, productName: string, variantId?: string) => {
     let finalProductId = productId;
@@ -119,7 +143,10 @@ export default function OrdersPage() {
                         </h3>
                         <p className="text-sm font-medium text-[#666666] mb-3">Items: {itemsCount}</p>
                         <div className="flex flex-wrap gap-3">
-                          <button className="text-[11px] font-bold text-[#222222] uppercase tracking-widest bg-[#F5F5F5] px-3.5 py-1.5 rounded-lg hover:bg-[#222222] hover:text-white transition-all">
+                          <button 
+                            onClick={() => handleBuyAgain(order)}
+                            className="text-[11px] font-bold text-[#222222] uppercase tracking-widest bg-[#F5F5F5] px-3.5 py-1.5 rounded-lg hover:bg-[#222222] hover:text-white transition-all"
+                          >
                             Buy Again
                           </button>
                           {order.orderStatus === "delivered" && (

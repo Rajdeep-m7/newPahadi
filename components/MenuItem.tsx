@@ -14,14 +14,14 @@ export default function MenuItem({ title, image, href, onClick }: MenuItemProps)
     <Link 
       href={href || `/category/${title.toLowerCase().replace(/\s+/g, '-')}`} 
       onClick={onClick}
-      className="group relative flex items-center gap-2 px-3 py-1 pb-2 cursor-pointer"
+      className="group relative flex items-center gap-2 px-5 py-1 pb-2 cursor-pointer"
     >
       <Image
         height={20}
         width={20}
         src={image}
         alt={title}
-        className="w-6 h-6"
+        className="w-4 h-4"
       />
 
       <p className="text-md text-gray-700 transition-all duration-300 group-hover:text-amber-500">

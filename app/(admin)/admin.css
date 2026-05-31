@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "RupeeSystem";
+  src: local("Inter"), local("Segoe UI"), local("Roboto"), local("Arial"), local("sans-serif");
+  unicode-range: U+20B9;
+}
+
+@theme {
+  --font-futura: "RupeeSystem", var(--font-futura-raw), system-ui, sans-serif;
+}
+
 @layer base {
   :root {
     /* Brand Colors */
@@ -20,8 +30,8 @@
     --radius: 12px;
 
     /* Typography */
-    --font-family: var(--font-ubuntu), "Ubuntu", system-ui, sans-serif;
-    --letter-spacing: -0.03em;
+    --font-family: "RupeeSystem", var(--font-futura-raw), system-ui, sans-serif;
+    --letter-spacing: -0.01em;
   }
 
   * {

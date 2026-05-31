@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { useCartStore } from "@/lib/store/useCartStore";
 
@@ -23,7 +23,7 @@ import { HiOutlineMenu, HiX } from "react-icons/hi";
 import MenuItem from "./MenuItem";
 
 import logo from "../public/favicon.png";
-import logopc from "../public/logo pc.svg";
+import logopc from "../public/logo pc copy 2.svg";
 import fallbackIcon from "../public/all-jewellery.svg";
 import { useCustomerStore } from "@/lib/store/useCustomerStore";
 
@@ -40,6 +40,7 @@ type HeaderClientProps = {
 
 const HeaderClient = ({ categories }: HeaderClientProps) => {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -71,7 +72,7 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
   );
 
   return (
-    <header className="max-w-384 w-full px-4 sm:px-7 lg:px-16 sticky top-0 z-50 bg-white border-b border-gray-50">
+    <header className="max-w-384 w-full mx-auto px-4 sm:px-7 lg:px-16 sticky top-0 z-50 bg-white border-b border-gray-50">
       <div className="flex items-center justify-between gap-4 py-1.5 md:py-2">
         <div className="flex items-center gap-2">
           <button onClick={() => setOpen(true)} className="lg:hidden">
@@ -154,6 +155,17 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
                       <p className="text-[11px] text-gray-500 truncate font-medium">{customer?.email || customer?.phone}</p>
                     </div>
 
+                    {customer?.role === 'admin' && (
+                      <Link
+                        href="/admin/orders"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="rounded-lg px-3 py-2 text-sm font-bold text-amber-600 transition-all hover:bg-amber-50 hover:text-amber-700 flex items-center gap-2"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        Admin Panel
+                      </Link>
+                    )}
+
                     <Link
                       href="/account"
                       onClick={() => setUserMenuOpen(false)}
@@ -230,7 +242,7 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
         </div>
       )}
 
-      <div className="max-w-384 hidden lg:block border-t border-gray-100 py-1">
+      <div className="max-w-384 mx-auto hidden lg:block border-t border-gray-100 py-1">
         <Swiper
           modules={[FreeMode, Mousewheel, Autoplay]}
           slidesPerView="auto"
@@ -264,27 +276,76 @@ const HeaderClient = ({ categories }: HeaderClientProps) => {
 
       {/* Mobile Drawer */}
       <div
-        className={`fixed left-0 top-0 z-50 h-full w-72 bg-white shadow-xl transition-transform duration-300 ${
+        className={`fixed left-0 top-0 z-60 h-full w-80 bg-white shadow-2xl transition-transform duration-500 ease-in-out ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between border-b p-5">
-          <h2 className="text-xl font-semibold">Menu</h2>
-          <button onClick={() => setOpen(false)}>
-            <HiX className="text-3xl text-gray-700" />
+        <div className="flex items-center justify-between border-b border-gray-50 p-6">
+          <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2">
+            <Image src={logo} alt="Logo" width={32} height={32} />
+            <span className="text-xl font-bold text-gray-900 tracking-tight">Pahadi</span>
+          </Link>
+          <button 
+            onClick={() => setOpen(false)}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <HiX className="text-2xl text-gray-500" />
           </button>
         </div>
 
-        <div className="flex flex-col py-2 max-h-[calc(100vh-80px)] overflow-y-auto">
-          {menuItems.map((item) => (
-            <MenuItem
-              key={item.slug}
-              title={item.name}
-              image={item.iconUrl || item.imageUrl || fallbackIcon}
-              href={`/category/${item.slug}`}
+        <div className="flex flex-col p-4 max-h-[calc(100vh-80px)] overflow-y-auto custom-scrollbar">
+          <div className="space-y-1">
+            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4 px-2">Collections</h3>
+            {menuItems.map((item) => (
+              <Link
+                key={item.slug}
+                href={`/category/${item.slug}`}
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-4 px-3 py-3 rounded-2xl transition-all duration-300 group ${
+                  pathname === `/category/${item.slug}`
+                    ? "bg-amber-50 text-amber-500"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                   pathname === `/category/${item.slug}` ? "bg-white shadow-sm" : "bg-gray-100 group-hover:bg-white group-hover:shadow-sm"
+                }`}>
+                  <Image
+                    height={20}
+                    width={20}
+                    src={item.iconUrl || item.imageUrl || fallbackIcon}
+                    alt={item.name}
+                    className="w-6 h-6 object-contain"
+                  />
+                </div>
+                <span className="text-sm font-bold tracking-tight">{item.name}</span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-gray-50 space-y-1">
+            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4 px-2">Account</h3>
+            <Link
+              href="/account"
               onClick={() => setOpen(false)}
-            />
-          ))}
+              className="flex items-center gap-4 px-3 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+                <CiUser size={20} />
+              </div>
+              <span className="text-sm font-bold">My Profile</span>
+            </Link>
+            <Link
+              href="/wishlist"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-4 px-3 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+                <IoIosHeartEmpty size={20} />
+              </div>
+              <span className="text-sm font-bold">My Wishlist</span>
+            </Link>
+          </div>
         </div>
       </div>
 

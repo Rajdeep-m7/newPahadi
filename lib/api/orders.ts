@@ -1,4 +1,4 @@
-import { adminApi } from '@/lib/fetchers';
+import { adminApi, shopApi } from '@/lib/fetchers';
 
 // ============================================================================
 // Types (Enriched response from backend)
@@ -178,6 +178,27 @@ export const orderApi = {
       `/orders/${id}/return/refund`,
       data
     );
+    return response.data.data;
+  },
+};
+
+export const shopOrderApi = {
+  list: async (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+  }): Promise<OrderListResponse> => {
+    const response = await shopApi.get<{ data: OrderListResponse }>('/orders/me', { params });
+    return response.data.data;
+  },
+
+  getById: async (id: string): Promise<Order> => {
+    const response = await shopApi.get<{ data: { order: Order } }>(`/orders/me/${id}`);
+    return response.data.data.order;
+  },
+
+  track: async (id: string): Promise<TrackResponse> => {
+    const response = await shopApi.get<{ data: TrackResponse }>(`/orders/me/${id}/track`);
     return response.data.data;
   },
 };

@@ -121,7 +121,7 @@ export default function AdminGuard({
             </div>
             <div className="text-center">
               <p className="text-sm font-bold text-primary uppercase tracking-[0.2em] mb-1">
-                MsCliq Secure
+                Pahadi Collections Secure
               </p>
               <p className="text-[10px] font-bold text-muted uppercase tracking-widest animate-pulse">
                 {!isReady ? 'Verifying Session...' : 'Redirecting to Login...'}

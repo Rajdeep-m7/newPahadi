@@ -45,6 +45,7 @@ const CategoryPage = ({
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [priceRange, setPriceRange] = useState<number>(10000);
 
   const toggleCategory = (slug: string) => {
     setOpenCategories(prev => ({
@@ -57,17 +58,17 @@ const CategoryPage = ({
     let result = products.filter(p => p.isActive !== false);
     
     if (inStockOnly) {
-      result = result.filter(p => {
-        const stockValue = p.stocks;
-        return stockValue === undefined || stockValue > 0;
-      });
+      result = result.filter(p => p.stocks === undefined || p.stocks > 0);
     }
+
+    result = result.filter(p => p.price <= priceRange);
+
     return result.sort((a, b) => {
       if (sortBy === "lowToHigh") return a.price - b.price;
       if (sortBy === "highToLow") return b.price - a.price;
       return 0;
     });
-  }, [products, sortBy, inStockOnly]);
+  }, [products, sortBy, inStockOnly, priceRange]);
 
   return (
     <section className="w-full lg:h-[calc(100vh-120px)] lg:overflow-hidden flex flex-col pt-0">
@@ -145,7 +146,7 @@ const CategoryPage = ({
       <div className="flex flex-col lg:flex-row gap-8 items-start relative flex-1 min-h-0">
         {/* Sidebar - Sticky */}
         <aside
-          className={`fixed lg:sticky lg:top-0 left-0 top-0 z-[60] h-full lg:h-fit w-80 lg:w-[300px] overflow-y-auto no-scrollbar bg-white lg:bg-transparent transition-all duration-300 border-r lg:border-none border-gray-100 p-6 lg:p-0 shrink-0 ${
+          className={`fixed lg:sticky lg:top-0 left-0 top-0 z-[60] h-full lg:h-full w-80 lg:w-[300px] overflow-y-auto no-scrollbar bg-white lg:bg-transparent transition-all duration-300 border-r lg:border-none border-gray-100 p-6 lg:p-0 shrink-0 ${
             mobileFilterOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
           }`}
         >
@@ -159,84 +160,69 @@ const CategoryPage = ({
             </button>
           </div>
 
-          <div className="space-y-8 lg:bg-white lg:rounded-3xl lg:border lg:border-gray-100 lg:p-7 lg:shadow-sm">
-            {/* Categories Dropdown */}
+          <div className="space-y-8 lg:bg-white lg:rounded-3xl lg:border lg:border-gray-100 lg:p-7 lg:shadow-sm pb-24 lg:pb-12">
+            {/* Categories List */}
             <div>
-              <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4 px-1">Select Collection</h3>
-              <div className="relative">
-                <button 
-                  onClick={() => toggleCategory('dropdown')}
-                  className="w-full flex items-center justify-between rounded-2xl border border-gray-100 bg-gray-50/50 px-5 py-3.5 text-sm font-bold text-gray-700 hover:bg-white hover:border-amber-200 transition-all group"
+              <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-5 px-1">Collections</h3>
+              <div className="space-y-1.5">
+                <Link
+                  href="/category/all-jewellery"
+                  onClick={() => setMobileFilterOpen(false)}
+                  className={`flex items-center justify-between rounded-2xl px-5 py-3.5 text-sm font-bold transition-all duration-300 group ${
+                    categorySlug === "all-jewellery"
+                      ? "bg-amber-500 text-white shadow-lg shadow-amber-200"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-amber-500"
+                  }`}
                 >
-                  <span className="truncate">{categoryName}</span>
-                  <HiChevronDown className={`text-lg transition-transform duration-300 ${openCategories['dropdown'] ? 'rotate-180' : ''}`} />
-                </button>
-
-                {openCategories['dropdown'] && (
-                  <div className="absolute left-0 top-full z-[70] mt-2 w-full max-h-80 overflow-y-auto no-scrollbar rounded-2xl border border-gray-100 bg-white p-2 shadow-2xl animate-in zoom-in-95 duration-200">
+                  <span>All Jewellery</span>
+                  <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${categorySlug === "all-jewellery" ? "bg-white" : "bg-transparent group-hover:bg-amber-500"}`}></div>
+                </Link>
+                
+                {categories.map((category) => (
+                  <div key={category.slug} className="space-y-1">
                     <Link
-                      href="/category/all-jewellery"
-                      onClick={() => {
-                        setMobileFilterOpen(false);
-                        setOpenCategories({});
-                      }}
-                      className={`block rounded-xl px-4 py-3 text-sm font-bold transition-all ${
-                        categorySlug === "all-jewellery"
-                          ? "bg-amber-500 text-white"
-                          : "text-gray-600 hover:bg-gray-50"
+                      href={`/category/${category.slug}`}
+                      onClick={() => setMobileFilterOpen(false)}
+                      className={`flex items-center justify-between rounded-2xl px-5 py-3.5 text-sm font-bold transition-all duration-300 group ${
+                        categorySlug === category.slug
+                          ? "bg-amber-500 text-white shadow-lg shadow-amber-200"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-amber-500"
                       }`}
                     >
-                      All Jewellery
+                      <div className="flex items-center gap-2">
+                        <span>{category.name}</span>
+                        {category.productCount !== undefined && (
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${categorySlug === category.slug ? "bg-white/20 text-white" : "bg-gray-100 text-gray-400 group-hover:bg-amber-100 group-hover:text-amber-600"}`}>
+                            {category.productCount}
+                          </span>
+                        )}
+                      </div>
+                      <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${categorySlug === category.slug ? "bg-white" : "bg-transparent group-hover:bg-amber-500"}`}></div>
                     </Link>
                     
-                    {categories.map((category) => (
-                      <div key={category.slug}>
-                        <Link
-                          href={`/category/${category.slug}`}
-                          onClick={() => {
-                            setMobileFilterOpen(false);
-                            setOpenCategories({});
-                          }}
-                          className={`block rounded-xl px-4 py-3 text-sm font-bold transition-all ${
-                            categorySlug === category.slug
-                              ? "bg-amber-500 text-white"
-                              : "text-gray-600 hover:bg-gray-50"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span>{category.name}</span>
-                            {category.productCount !== undefined && (
-                              <span className="text-[10px] opacity-60">{category.productCount}</span>
-                            )}
-                          </div>
-                        </Link>
-                        
-                        {category.children?.map((child) => (
+                    {category.children && category.children.length > 0 && (
+                      <div className="ml-4 pl-4 border-l border-gray-100 space-y-1 my-2">
+                        {category.children.map((child) => (
                           <Link
                             key={child.slug}
                             href={`/category/${child.slug}`}
-                            onClick={() => {
-                              setMobileFilterOpen(false);
-                              setOpenCategories({});
-                            }}
-                            className={`block rounded-xl ml-3 px-4 py-2.5 text-xs font-bold transition-all ${
+                            onClick={() => setMobileFilterOpen(false)}
+                            className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-xs font-bold transition-all duration-300 group ${
                               categorySlug === child.slug
                                 ? "text-amber-500 bg-amber-50"
-                                : "text-gray-500 hover:bg-gray-50"
+                                : "text-gray-500 hover:text-amber-500 hover:bg-gray-50/50"
                             }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <span>— {child.name}</span>
-                              {child.productCount !== undefined && (
-                                <span className="text-[9px] opacity-50">{child.productCount}</span>
-                              )}
-                            </div>
+                            <span>{child.name}</span>
+                            {child.productCount !== undefined && (
+                              <span className="text-[9px] opacity-50">{child.productCount}</span>
+                            )}
                           </Link>
                         ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
+                ))}
               </div>
             </div>
 
@@ -265,7 +251,9 @@ const CategoryPage = ({
                 <input
                   type="range"
                   min="0"
-                  max="50000"
+                  max="10000"
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(parseInt(e.target.value))}
                   className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-amber-500"
                 />
                 <div className="mt-4 flex items-center justify-between">
@@ -276,7 +264,7 @@ const CategoryPage = ({
                   <div className="h-px w-4 bg-gray-200" />
                   <div className="bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100 text-right">
                     <span className="text-[10px] text-gray-400 block uppercase font-bold tracking-tighter">Max</span>
-                    <span className="text-xs font-bold text-gray-700">₹50,000</span>
+                    <span className="text-xs font-bold text-gray-700">{formatPrice(priceRange)}</span>
                   </div>
                 </div>
               </div>

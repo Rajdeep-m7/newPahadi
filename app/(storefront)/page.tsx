@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 function page() {
   return (
     <div>
-      <div className="main-shell !pt-3 !pb-1">
+      <div className="main-shell pt-3! pb-1!">
         <HeroSlider />
       </div>
       <main className="main-shell">

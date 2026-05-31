@@ -91,10 +91,10 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 // Mock filter options
-const brands = ['Apple', 'Samsung', 'Sony', 'Asus', 'MSI', 'LG', 'Dell', 'HP'];
+const brands = ['Pahadi Collections', 'Tanishq', 'CaratLane', 'Malabar', 'Kalyan', 'Reliance Jewels'];
 const categories = [
-  'Processors', 'Graphics Cards', 'Motherboards', 'RAM', 'Storage',
-  'Power Supplies', 'Cooling', 'Cases', 'Monitors', 'Peripherals'
+  'Necklaces', 'Earrings', 'Rings', 'Bangles', 'Bracelets', 
+  'Anklets', 'Pendants', 'Nose Pins', 'Jewellery Sets', 'Others'
 ];
 
 // ============================================================================
